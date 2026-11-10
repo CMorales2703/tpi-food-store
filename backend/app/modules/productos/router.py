@@ -1,148 +1,90 @@
-from typing import Optional
+"""Productos: lecturas públicas (solo activos); escrituras solo para admin."""
 
-from fastapi import APIRouter, Depends, Query, status
+from typing import Annotated, Optional
 
-from app.core.dependencies import get_current_active_user, require_role
+from fastapi import APIRouter, Depends, Query, Response, status
+
+from app.core.deps import require_role
 from app.core.exceptions import DominioError, a_http
 from app.modules.productos.schemas import (
-    ProductoCategoriaCreate,
-    ProductoCategoriaRead,
-    ProductoCategoriaUpdate,
     ProductoCreate,
     ProductoRead,
+    ProductosPaginados,
+    ProductoStockUpdate,
     ProductoUpdate,
 )
-from app.modules.productos.service import ProductoCategoriaService, ProductoService
+from app.modules.productos.service import ProductoService
 from app.modules.productos.unit_of_work import ProductoUnitOfWork
 
-# RN-07: lectura para cualquier usuario autenticado (y con la cuenta activa)
-router = APIRouter(
-    prefix="/productos",
-    tags=["productos"],
-    dependencies=[Depends(get_current_active_user)],
-)
+router = APIRouter(prefix="/productos", tags=["productos"])
 
-# RN-04: las escrituras exigen el rol admin (403 para un user)
 SOLO_ADMIN = [Depends(require_role(["admin"]))]
 
 
-def get_service() -> ProductoService:
+def get_productos_service() -> ProductoService:
     return ProductoService(ProductoUnitOfWork())
 
 
-def get_vinculo_service() -> ProductoCategoriaService:
-    return ProductoCategoriaService(ProductoUnitOfWork())
+ServicioProductos = Annotated[ProductoService, Depends(get_productos_service)]
 
 
-# ===================== Producto =====================
-@router.get("/", response_model=list[ProductoRead])
+@router.get("", response_model=ProductosPaginados)
 def listar_productos(
-    categoria_id: Optional[int] = Query(default=None, description="Filtrar por categoría"),
-    disponibles: bool = Query(default=False, description="Sólo productos disponibles"),
-    service: ProductoService = Depends(get_service),
+    service: ServicioProductos,
+    skip: Annotated[int, Query(ge=0)] = 0,
+    limit: Annotated[int, Query(ge=1, le=100)] = 20,
+    search: Annotated[Optional[str], Query(description="Busca en el nombre")] = None,
+    categoria_id: Optional[int] = None,
+    disponible: Optional[bool] = None,
 ):
-    return service.listar(categoria_id=categoria_id, solo_disponibles=disponibles)
+    return service.listar(skip, limit, search, categoria_id, disponible)
 
 
 @router.get("/{producto_id}", response_model=ProductoRead)
-def obtener_producto(producto_id: int, service: ProductoService = Depends(get_service)):
+def obtener_producto(producto_id: int, service: ServicioProductos):
     try:
         return service.obtener(producto_id)
     except DominioError as e:
-        raise a_http(e)
+        raise a_http(e)  # 404
 
 
 @router.post(
-    "/", response_model=ProductoRead, status_code=status.HTTP_201_CREATED, dependencies=SOLO_ADMIN
+    "",
+    response_model=ProductoRead,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=SOLO_ADMIN,
 )
-def crear_producto(datos: ProductoCreate, service: ProductoService = Depends(get_service)):
+def crear_producto(datos: ProductoCreate, service: ServicioProductos):
     try:
         return service.crear(datos)
     except DominioError as e:
-        raise a_http(e)
+        raise a_http(e)  # 404 categoría inexistente o dada de baja
 
 
 @router.put("/{producto_id}", response_model=ProductoRead, dependencies=SOLO_ADMIN)
-def actualizar_producto(
-    producto_id: int, datos: ProductoUpdate, service: ProductoService = Depends(get_service)
-):
+def actualizar_producto(producto_id: int, datos: ProductoUpdate, service: ServicioProductos):
     try:
         return service.actualizar(producto_id, datos)
     except DominioError as e:
-        raise a_http(e)
+        raise a_http(e)  # 404 producto o nueva categoría
 
 
-@router.delete("/{producto_id}", status_code=status.HTTP_204_NO_CONTENT, dependencies=SOLO_ADMIN)
-def eliminar_producto(producto_id: int, service: ProductoService = Depends(get_service)):
+@router.patch("/{producto_id}/stock", response_model=ProductoRead, dependencies=SOLO_ADMIN)
+def actualizar_stock(producto_id: int, datos: ProductoStockUpdate, service: ServicioProductos):
     try:
-        service.eliminar(producto_id)
+        return service.actualizar_stock(producto_id, datos)
     except DominioError as e:
-        raise a_http(e)
-
-
-# ============ ProductoCategoria (recurso anidado) ============
-@router.get(
-    "/{producto_id}/categorias/",
-    response_model=list[ProductoCategoriaRead],
-    tags=["producto-categoria"],
-)
-def listar_categorias_de_producto(
-    producto_id: int, service: ProductoCategoriaService = Depends(get_vinculo_service)
-):
-    try:
-        return service.listar(producto_id)
-    except DominioError as e:
-        raise a_http(e)
-
-
-@router.post(
-    "/{producto_id}/categorias/",
-    response_model=ProductoCategoriaRead,
-    status_code=status.HTTP_201_CREATED,
-    tags=["producto-categoria"],
-    dependencies=SOLO_ADMIN,
-)
-def asociar_categoria(
-    producto_id: int,
-    datos: ProductoCategoriaCreate,
-    service: ProductoCategoriaService = Depends(get_vinculo_service),
-):
-    try:
-        return service.asociar(producto_id, datos)
-    except DominioError as e:
-        raise a_http(e)
-
-
-@router.patch(
-    "/{producto_id}/categorias/{categoria_id}",
-    response_model=ProductoCategoriaRead,
-    tags=["producto-categoria"],
-    dependencies=SOLO_ADMIN,
-)
-def cambiar_principal(
-    producto_id: int,
-    categoria_id: int,
-    datos: ProductoCategoriaUpdate,
-    service: ProductoCategoriaService = Depends(get_vinculo_service),
-):
-    try:
-        return service.actualizar(producto_id, categoria_id, datos)
-    except DominioError as e:
-        raise a_http(e)
+        raise a_http(e)  # 404
 
 
 @router.delete(
-    "/{producto_id}/categorias/{categoria_id}",
+    "/{producto_id}",
     status_code=status.HTTP_204_NO_CONTENT,
-    tags=["producto-categoria"],
+    response_class=Response,
     dependencies=SOLO_ADMIN,
 )
-def desasociar_categoria(
-    producto_id: int,
-    categoria_id: int,
-    service: ProductoCategoriaService = Depends(get_vinculo_service),
-):
+def eliminar_producto(producto_id: int, service: ServicioProductos):
     try:
-        service.desasociar(producto_id, categoria_id)
+        service.eliminar(producto_id)
     except DominioError as e:
-        raise a_http(e)
+        raise a_http(e)  # 404

@@ -1,34 +1,31 @@
-from datetime import datetime
+"""Schemas de categoría (SQLModel sin table=True)."""
+
 from typing import Annotated, Optional
 
-from pydantic import BaseModel, ConfigDict, StringConstraints
+from pydantic import StringConstraints
+from sqlmodel import SQLModel
 
-# RN-01: obligatorio. strip_whitespace elimina los espacios de los extremos,
-# así "   " queda vacío y min_length=1 lo rechaza (422).
+# strip_whitespace quita los espacios de los extremos: "  " queda vacío y no pasa el mínimo
 NombreCategoria = Annotated[
-    str, StringConstraints(strip_whitespace=True, min_length=1, max_length=100)
+    str, StringConstraints(strip_whitespace=True, min_length=2, max_length=100)
 ]
-# RN-03: opcional, default ""
-DescripcionCategoria = Annotated[str, StringConstraints(strip_whitespace=True, max_length=500)]
+Descripcion = Annotated[str, StringConstraints(strip_whitespace=True, max_length=500)]
 
 
-class CategoriaCreate(BaseModel):
+class CategoriaCreate(SQLModel):
     nombre: NombreCategoria
-    descripcion: DescripcionCategoria = ""
+    descripcion: Optional[Descripcion] = None
 
 
-class CategoriaUpdate(BaseModel):
-    """Campos opcionales: sólo se modifica lo que se envía."""
+class CategoriaUpdate(SQLModel):
+    """Actualización parcial: solo se modifican los campos enviados."""
 
     nombre: Optional[NombreCategoria] = None
-    descripcion: Optional[DescripcionCategoria] = None
+    descripcion: Optional[Descripcion] = None
 
 
-class CategoriaRead(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-
+class CategoriaRead(SQLModel):
     id: int
     nombre: str
-    descripcion: str
-    created_at: datetime
-    updated_at: datetime
+    descripcion: Optional[str]
+    activo: bool
