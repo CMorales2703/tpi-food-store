@@ -38,9 +38,14 @@ Se levantan dos proyectos en dos terminales: primero el backend y después el fr
 ```bash
 cd backend
 
-# Entorno virtual y dependencias (versiones fijadas en requirements.txt)
-python3 -m venv .venv
+# Entorno virtual con Python 3.11, 3.12 o 3.13, indicando la versión explícitamente:
+# en macOS, `python3` suele ser el 3.9 de Apple y la instalación falla.
+python3.12 -m venv .venv           # Windows: py -3.12 -m venv .venv
 source .venv/bin/activate          # Windows: .venv\Scripts\activate
+python --version                   # tiene que decir 3.11, 3.12 o 3.13
+
+# Dependencias (versiones fijadas en requirements.txt)
+pip install --upgrade pip
 pip install -r requirements.txt
 
 # Variables de entorno: copiar y completar DATABASE_URL (ver la tabla de abajo)
@@ -214,7 +219,7 @@ dropdb foodstore_db && createdb foodstore_db && python -m app.db.seed
 
 | Síntoma | Causa y solución |
 |---|---|
-| `TypeError: unsupported operand type(s) for \|` al iniciar el backend | El entorno virtual se creó con Python 3.9. Borrar `.venv` y crearlo con Python 3.11 a 3.13 |
+| `No matching distribution found for fastapi[standard]==…` al instalar, o `TypeError: unsupported operand type(s) for \|` al iniciar | El entorno virtual se creó con Python 3.9. Borrar `.venv` y crearlo con `python3.12 -m venv .venv` |
 | `Connection refused` en el puerto 5432 | PostgreSQL no está corriendo. Con Homebrew: `brew services start postgresql@16` |
 | `role "postgres" does not exist` | Con Homebrew el usuario es el de la Mac: usar `createdb foodstore_db` sin `-U`, o crear el rol con `createuser -s postgres` |
 | `No module named 'psycopg'` | La `DATABASE_URL` tiene `+psycopg`. Usar `postgresql://…`, sin indicar el driver |
