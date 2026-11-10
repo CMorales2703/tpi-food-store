@@ -1,6 +1,7 @@
 import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
 import { useForm } from '@tanstack/react-form';
+import { validarAlSalir } from '../../../shared/utils/form';
 import MensajeError from '../../../shared/components/MensajeError';
 import Button from '../../../shared/ui/Button';
 import { Input } from '../../../shared/ui/Input';
@@ -124,11 +125,10 @@ export default function RegisterPage() {
         }}
       >
         {CAMPOS.map((campo) => (
-          // onBlur: también valida si se entra y se sale del campo sin escribir
           <form.Field
             key={campo.name}
             name={campo.name}
-            validators={{ onChange: campo.validar, onBlur: campo.validar }}
+            validators={{ onChange: campo.validar }}
           >
             {(field) => (
               <Input
@@ -139,7 +139,7 @@ export default function RegisterPage() {
                 ayuda={campo.ayuda}
                 autoComplete={campo.autoComplete}
                 value={field.state.value}
-                onBlur={field.handleBlur}
+                onBlur={validarAlSalir(field)}
                 onChange={(e) => field.handleChange(e.target.value)}
                 errores={field.state.meta.errors}
                 mostrarErrores={field.state.meta.isTouched}
@@ -154,10 +154,6 @@ export default function RegisterPage() {
             // Se vuelve a validar cuando cambia la contraseña
             onChangeListenTo: ['password'],
             onChange: ({ value, fieldApi }) =>
-              value !== fieldApi.form.getFieldValue('password')
-                ? 'Las contraseñas no coinciden'
-                : undefined,
-            onBlur: ({ value, fieldApi }) =>
               value === ''
                 ? 'Repetí la contraseña'
                 : value !== fieldApi.form.getFieldValue('password')
@@ -173,7 +169,7 @@ export default function RegisterPage() {
               requerido
               autoComplete="new-password"
               value={field.state.value}
-              onBlur={field.handleBlur}
+              onBlur={validarAlSalir(field)}
               onChange={(e) => field.handleChange(e.target.value)}
               errores={field.state.meta.errors}
               mostrarErrores={field.state.meta.isTouched}

@@ -1,4 +1,5 @@
 import { useForm } from '@tanstack/react-form';
+import { validarAlSalir } from '../../../shared/utils/form';
 import MensajeError from '../../../shared/components/MensajeError';
 import Button from '../../../shared/ui/Button';
 import { Campo, Input, TextArea } from '../../../shared/ui/Input';
@@ -53,7 +54,7 @@ export default function CheckoutForm({ onConfirmar, error }: CheckoutFormProps) 
     >
       <form.Field
         name="direccion_entrega"
-        validators={{ onChange: validarDireccion, onBlur: validarDireccion }}
+        validators={{ onChange: validarDireccion }}
       >
         {(field) => (
           <Input
@@ -63,7 +64,7 @@ export default function CheckoutForm({ onConfirmar, error }: CheckoutFormProps) 
             placeholder="Calle, número, piso y depto."
             autoComplete="street-address"
             value={field.state.value}
-            onBlur={field.handleBlur}
+            onBlur={validarAlSalir(field)}
             onChange={(e) => field.handleChange(e.target.value)}
             errores={field.state.meta.errors}
             mostrarErrores={field.state.meta.isTouched}
@@ -110,7 +111,7 @@ export default function CheckoutForm({ onConfirmar, error }: CheckoutFormProps) 
 
       <form.Field
         name="notas"
-        validators={{ onChange: maxLargo(500), onBlur: maxLargo(500) }}
+        validators={{ onChange: maxLargo(500) }}
       >
         {(field) => (
           <TextArea
@@ -118,7 +119,7 @@ export default function CheckoutForm({ onConfirmar, error }: CheckoutFormProps) 
             label="Notas (opcional)"
             placeholder="Timbre, entre calles, sin cebolla…"
             value={field.state.value}
-            onBlur={field.handleBlur}
+            onBlur={validarAlSalir(field)}
             onChange={(e) => field.handleChange(e.target.value)}
             errores={field.state.meta.errors}
             mostrarErrores={field.state.meta.isTouched}

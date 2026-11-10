@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useForm } from '@tanstack/react-form';
+import { validarAlSalir } from '../../../shared/utils/form';
 import MensajeError from '../../../shared/components/MensajeError';
 import Button from '../../../shared/ui/Button';
 import { Input } from '../../../shared/ui/Input';
@@ -74,7 +75,7 @@ export default function LoginPage() {
       >
         <form.Field
           name="username"
-          validators={{ onChange: requerido('Ingresá tu usuario'), onBlur: requerido('Ingresá tu usuario') }}
+          validators={{ onChange: requerido('Ingresá tu usuario') }}
         >
           {(field) => (
             <Input
@@ -83,7 +84,7 @@ export default function LoginPage() {
               autoComplete="username"
               autoFocus={!estado.registrado}
               value={field.state.value}
-              onBlur={field.handleBlur}
+              onBlur={validarAlSalir(field)}
               onChange={(e) => field.handleChange(e.target.value)}
               errores={field.state.meta.errors}
               mostrarErrores={field.state.meta.isTouched}
@@ -93,7 +94,7 @@ export default function LoginPage() {
 
         <form.Field
           name="password"
-          validators={{ onChange: requerido('Ingresá tu contraseña'), onBlur: requerido('Ingresá tu contraseña') }}
+          validators={{ onChange: requerido('Ingresá tu contraseña') }}
         >
           {(field) => (
             <Input
@@ -103,7 +104,7 @@ export default function LoginPage() {
               autoComplete="current-password"
               autoFocus={Boolean(estado.registrado)}
               value={field.state.value}
-              onBlur={field.handleBlur}
+              onBlur={validarAlSalir(field)}
               onChange={(e) => field.handleChange(e.target.value)}
               errores={field.state.meta.errors}
               mostrarErrores={field.state.meta.isTouched}
