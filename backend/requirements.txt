@@ -1,11 +1,12 @@
-# Fase 1, paso 1: dependencias de core/ ya migradas y fijadas.
-# En el paso 3 se fijan todas con == y psycopg[binary] pasa a psycopg2-binary.
-fastapi[standard]>=0.115
-sqlmodel>=0.0.22
-psycopg[binary]>=3.2
+# Versiones fijadas (probado con Python 3.12; el enunciado admite 3.11 a 3.13)
+fastapi[standard]==0.162.4
+sqlmodel==0.0.48
+SQLAlchemy==2.1.8
+psycopg2-binary==2.9.13
 pydantic-settings==2.6.1
 python-jose[cryptography]==3.5.0
+# passlib 1.7.4 falla con bcrypt 5: hay que fijar las dos
 passlib[bcrypt]==1.7.4
 bcrypt==4.0.1
 python-multipart==0.0.20
-email-validator>=2.2
+email-validator==2.3.0
