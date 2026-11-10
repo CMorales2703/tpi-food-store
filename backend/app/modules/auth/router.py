@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, Response, status
 from fastapi.security import OAuth2PasswordRequestForm
 
 from app.core.config import settings
-from app.core.dependencies import UsuarioActivo
+from app.core.deps import UsuarioActivo
 from app.core.exceptions import DominioError, a_http
 from app.core.security import create_access_token
 from app.modules.usuarios.schemas import MensajeRespuesta, UserCreate, UserPublic

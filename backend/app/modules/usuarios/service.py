@@ -1,9 +1,6 @@
-from app.core.exceptions import (
-    ConflictoNegocio,
-    CuentaDesactivada,
-    NoAutenticado,
-    RecursoNoEncontrado,
-)
+from fastapi import HTTPException, status
+
+from app.core.exceptions import ConflictoNegocio, RecursoNoEncontrado
 from app.core.security import hash_password, verify_password
 from app.modules.usuarios.models import Usuario
 from app.modules.usuarios.schemas import UserCreate, UserPublic
@@ -15,11 +12,10 @@ class UsuarioNoEncontrado(RecursoNoEncontrado):
         super().__init__(f"Usuario {usuario_id} no encontrado")
 
 
-class CredencialesInvalidas(NoAutenticado):
-    def __init__(self) -> None:
-        # Mismo mensaje para usuario inexistente y contraseña incorrecta:
-        # no se revela cuál de los dos datos falló
-        super().__init__("Usuario o contraseña incorrectos")
+# En auth y usuarios el enunciado admite lanzar HTTPException desde el Service.
+# Mismo mensaje para usuario inexistente y contraseña incorrecta:
+# no se revela cuál de los dos datos falló.
+CREDENCIALES_INVALIDAS = "Usuario o contraseña incorrectos"
 
 
 class UsuarioService:
@@ -31,11 +27,11 @@ class UsuarioService:
         """RN-08: el registro público siempre asigna el rol user.
         (El parámetro role sólo lo usa seed.py para crear el admin inicial.)"""
         with self.uow as uow:
-            if uow.usuarios.buscar_por_username(datos.username) is not None:
+            if uow.usuarios.get_by_username(datos.username) is not None:
                 raise ConflictoNegocio(f"El usuario '{datos.username}' ya existe")  # RN-02
-            if uow.usuarios.buscar_por_email(datos.email) is not None:
+            if uow.usuarios.get_by_email(datos.email) is not None:
                 raise ConflictoNegocio(f"El email '{datos.email}' ya está registrado")  # RN-02
-            usuario = uow.usuarios.create(
+            usuario = uow.usuarios.add(
                 Usuario(
                     username=datos.username,
                     full_name=datos.full_name,
@@ -48,11 +44,15 @@ class UsuarioService:
 
     def autenticar(self, username: str, password: str) -> Usuario:
         with self.uow as uow:
-            usuario = uow.usuarios.buscar_por_username(username)
+            usuario = uow.usuarios.get_by_username(username)
         if usuario is None or not verify_password(password, usuario.hashed_password):
-            raise CredencialesInvalidas()
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED, detail=CREDENCIALES_INVALIDAS
+            )
         if usuario.disabled:
-            raise CuentaDesactivada()
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail="Cuenta de usuario desactivada"
+            )
         return usuario
 
     # ---------- administración (sólo admin) ----------
@@ -68,5 +68,5 @@ class UsuarioService:
             usuario = uow.usuarios.get_by_id(usuario_id)
             if usuario is None:
                 raise UsuarioNoEncontrado(usuario_id)
-            usuario = uow.usuarios.update(usuario, {"disabled": disabled})
+            usuario.disabled = disabled  # el commit del UoW lo persiste
             return UserPublic.model_validate(usuario)

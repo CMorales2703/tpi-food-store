@@ -1,49 +1,46 @@
 """Configuración de la aplicación leída desde variables de entorno (.env).
 
-El .env NO se entrega: se incluye .env.example con marcadores.
+Se usa pydantic-settings: cada atributo de Settings se completa con la variable
+de entorno del mismo nombre (o desde el archivo .env). Pydantic valida los tipos
+al arrancar, así que una variable faltante o inválida corta el inicio con un
+mensaje claro en lugar de fallar más tarde.
+
+El .env NO se entrega: se incluye .env.example con valores de ejemplo.
 """
 
-import os
+from typing import Literal
 
-from dotenv import load_dotenv
-
-load_dotenv()
-
-
-def _requerida(nombre: str) -> str:
-    valor = os.getenv(nombre, "").strip()
-    if not valor:
-        raise RuntimeError(
-            f"Falta la variable de entorno {nombre}. Copiá .env.example a .env y completala."
-        )
-    return valor
+from pydantic import Field
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
-class Settings:
-    # Base de datos (la contraseña va dentro de la URL)
-    DATABASE_URL: str = _requerida("DATABASE_URL")
-    SQL_ECHO: bool = os.getenv("SQL_ECHO", "false").lower() == "true"
+class Settings(BaseSettings):
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        # Variables de más en el .env (p. ej. las del TP9) se ignoran en lugar de dar error
+        extra="ignore",
+    )
 
-    # JWT
-    SECRET_KEY: str = _requerida("SECRET_KEY")
-    ALGORITHM: str = os.getenv("ALGORITHM", "HS256")
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "30"))
+    # --- Variables del enunciado ---
+    # La contraseña de la base va dentro de la URL. Sin valor por defecto: es obligatoria.
+    DATABASE_URL: str
+    # Firma del JWT: obligatoria y de al menos 32 caracteres
+    SECRET_KEY: str = Field(min_length=32)
+    ALGORITHM: str = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+    # Origen del frontend permitido por CORS (con credenciales no se admite "*")
+    FRONTEND_ORIGIN: str = "http://localhost:5173"
 
+    # --- Extras (no los pide el enunciado; tienen valores por defecto) ---
+    SQL_ECHO: bool = False
     # Cookie HttpOnly que transporta el JWT
     COOKIE_NAME: str = "access_token"
     # En producción (HTTPS) debe ser true; en localhost con HTTP, false
-    COOKIE_SECURE: bool = os.getenv("COOKIE_SECURE", "false").lower() == "true"
-    COOKIE_SAMESITE: str = os.getenv("COOKIE_SAMESITE", "lax")
-
-    # CORS con credenciales: los orígenes deben ser explícitos (no se admite "*")
-    CORS_ORIGINS: list[str] = [
-        origen.strip()
-        for origen in os.getenv("CORS_ORIGINS", "http://localhost:5173").split(",")
-        if origen.strip()
-    ]
-
+    COOKIE_SECURE: bool = False
+    COOKIE_SAMESITE: Literal["lax", "strict", "none"] = "lax"
     # Prefijo de todas las rutas de la API
     API_PREFIX: str = "/api/v1"
 
 
-settings = Settings()
+settings = Settings()  # type: ignore[call-arg]  # los valores vienen del entorno

@@ -2,7 +2,7 @@
 
 from fastapi import APIRouter, Depends
 
-from app.core.dependencies import require_role
+from app.core.deps import require_role
 from app.core.exceptions import DominioError, a_http
 from app.modules.usuarios.models import Usuario
 from app.modules.usuarios.schemas import UserPublic
