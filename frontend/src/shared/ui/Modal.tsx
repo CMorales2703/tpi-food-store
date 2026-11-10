@@ -1,4 +1,4 @@
-import { useEffect, type ReactNode } from 'react';
+import type { ReactNode } from 'react';
 
 interface ModalProps {
   abierto: boolean;
@@ -8,18 +8,14 @@ interface ModalProps {
   ancho?: 'md' | 'lg';
 }
 
-/** Modal controlado: el padre decide si se muestra. Se cierra con Escape o clic afuera. */
-export default function Modal({ abierto, onCerrar, titulo, children, ancho = 'md' }: ModalProps) {
-  // Efecto de interfaz (teclado), no de datos: no trae nada del servidor
-  useEffect(() => {
-    if (!abierto) return;
-    const alPresionar = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onCerrar();
-    };
-    window.addEventListener('keydown', alPresionar);
-    return () => window.removeEventListener('keydown', alPresionar);
-  }, [abierto, onCerrar]);
+/** Lleva el foco al diálogo al abrirlo (si ningún campo de adentro lo tomó con autoFocus),
+ *  para que Escape funcione. Es una función fija: React la llama solo al montar y desmontar. */
+const enfocarAlAbrir = (nodo: HTMLDivElement | null): void => {
+  if (nodo && !nodo.contains(document.activeElement)) nodo.focus();
+};
 
+/** Modal controlado: el padre decide si se muestra. Se cierra con Escape, con la × o con clic afuera. */
+export default function Modal({ abierto, onCerrar, titulo, children, ancho = 'md' }: ModalProps) {
   if (!abierto) return null;
 
   return (
@@ -31,7 +27,13 @@ export default function Modal({ abierto, onCerrar, titulo, children, ancho = 'md
         role="dialog"
         aria-modal="true"
         aria-labelledby="modal-titulo"
-        className={`max-h-[90vh] w-full overflow-y-auto rounded-xl bg-white shadow-xl ${
+        // Recibe el foco al abrirse, así Escape funciona sin un listener global (sin useEffect)
+        tabIndex={-1}
+        ref={enfocarAlAbrir}
+        onKeyDown={(e) => {
+          if (e.key === 'Escape') onCerrar();
+        }}
+        className={`max-h-[90vh] w-full overflow-y-auto rounded-xl bg-white shadow-xl outline-none ${
           ancho === 'lg' ? 'max-w-2xl' : 'max-w-md'
         }`}
         onClick={(e) => e.stopPropagation()}
