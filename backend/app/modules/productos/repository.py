@@ -43,3 +43,11 @@ class ProductoRepository(BaseRepository[Producto]):
             .limit(limit)
         )
         return total, self.session.exec(stmt).all()
+
+    def get_by_id_for_update(self, producto_id: int) -> Producto | None:
+        """Como get_by_id, pero bloquea la fila hasta el fin de la transacción
+        (SELECT ... FOR UPDATE en PostgreSQL). Lo usan los pedidos al descontar o
+        restituir stock: si dos clientes compran el último producto a la vez, el
+        segundo espera al primero y ve el stock ya descontado."""
+        stmt = select(Producto).where(Producto.id == producto_id).with_for_update()
+        return self.session.exec(stmt).first()

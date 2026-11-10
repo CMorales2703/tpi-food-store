@@ -1,91 +1,83 @@
-"""Pedidos.
+"""Pedidos: crear (sesión), consultar (dueño o admin), cambiar estado (admin), cancelar (dueño)."""
 
-- Crear y consultar: cualquier usuario autenticado (rol user o admin, RN-05).
-  Un user sólo ve sus propios pedidos; un admin ve todos.
-- Cambiar el estado y eliminar: sólo admin.
-"""
+from typing import Annotated, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, Query, status
 
-from app.core.dependencies import UsuarioActivo, get_current_active_user, require_role
-from app.core.exceptions import (
-    ConflictoNegocio,
-    DatosInvalidos,
-    DominioError,
-    RecursoNoEncontrado,
+from app.core.deps import SoloAdmin, UsuarioActivo
+from app.core.exceptions import DominioError, a_http
+from app.modules.pedidos.schemas import (
+    CambioEstado,
+    EstadoPedido,
+    PedidoCreate,
+    PedidoRead,
+    PedidosPaginados,
+    ResumenPedidos,
 )
-from app.modules.pedidos.schemas import PedidoCreate, PedidoRead, PedidoUpdate
 from app.modules.pedidos.service import PedidoService
 from app.modules.pedidos.unit_of_work import PedidoUnitOfWork
 
-router = APIRouter(
-    prefix="/pedidos",
-    tags=["pedidos"],
-    dependencies=[Depends(get_current_active_user)],
-)
+router = APIRouter(prefix="/pedidos", tags=["pedidos"])
 
 
-def get_service() -> PedidoService:
+def get_pedido_service() -> PedidoService:
     return PedidoService(PedidoUnitOfWork())
 
 
-def traducir(error: DominioError) -> HTTPException:
-    """Traduce las excepciones del servicio a respuestas HTTP."""
-    if isinstance(error, RecursoNoEncontrado):  # pedido o producto inexistente
-        return HTTPException(status.HTTP_404_NOT_FOUND, detail=error.mensaje)
-    if isinstance(error, DatosInvalidos):  # estado fuera del catálogo
-        return HTTPException(422, detail=error.mensaje)
-    if isinstance(error, ConflictoNegocio):  # estado terminal
-        return HTTPException(status.HTTP_409_CONFLICT, detail=error.mensaje)
-    return HTTPException(status.HTTP_400_BAD_REQUEST, detail=error.mensaje)
+ServicioPedidos = Annotated[PedidoService, Depends(get_pedido_service)]
 
 
-@router.get("/", response_model=list[PedidoRead])
-def listar_pedidos(usuario: UsuarioActivo, service: PedidoService = Depends(get_service)):
-    return service.listar(usuario)
-
-
-@router.get("/{pedido_id}", response_model=PedidoRead)
-def obtener_pedido(
-    pedido_id: int, usuario: UsuarioActivo, service: PedidoService = Depends(get_service)
-):
-    try:
-        return service.obtener(pedido_id, usuario)
-    except DominioError as e:
-        raise traducir(e)
-
-
-@router.post("/", response_model=PedidoRead, status_code=status.HTTP_201_CREATED)
-def crear_pedido(
-    datos: PedidoCreate, usuario: UsuarioActivo, service: PedidoService = Depends(get_service)
-):
+@router.post("", response_model=PedidoRead, status_code=status.HTTP_201_CREATED)
+def crear_pedido(datos: PedidoCreate, usuario: UsuarioActivo, service: ServicioPedidos):
+    """RN-01: crea el pedido desde el carrito en una sola transacción."""
     try:
         return service.crear(datos, usuario)
     except DominioError as e:
-        raise traducir(e)
+        # 404 ProductoNoEncontrado; 400 StockInsuficiente, ProductoNoDisponible, ProductoRepetido
+        raise a_http(e)
 
 
-@router.put(
-    "/{pedido_id}",
-    response_model=PedidoRead,
-    dependencies=[Depends(require_role(["admin"]))],
-)
-def actualizar_estado_pedido(
-    pedido_id: int, datos: PedidoUpdate, service: PedidoService = Depends(get_service)
+@router.get("", response_model=PedidosPaginados)
+def listar_pedidos(
+    usuario: UsuarioActivo,
+    service: ServicioPedidos,
+    skip: Annotated[int, Query(ge=0)] = 0,
+    limit: Annotated[int, Query(ge=1, le=100)] = 20,
+    estado: Optional[EstadoPedido] = None,
 ):
-    try:
-        return service.actualizar_estado(pedido_id, datos)
-    except DominioError as e:
-        raise traducir(e)
+    """Propios (user) o todos (admin)."""
+    return service.listar(usuario, skip, limit, estado)
 
 
-@router.delete(
-    "/{pedido_id}",
-    status_code=status.HTTP_204_NO_CONTENT,
-    dependencies=[Depends(require_role(["admin"]))],
-)
-def eliminar_pedido(pedido_id: int, service: PedidoService = Depends(get_service)):
+# Se declara ANTES de /{pedido_id}: si no, "resumen" se tomaría como un id (y daría 422)
+@router.get("/resumen", response_model=ResumenPedidos)
+def resumen_pedidos(_admin: SoloAdmin, service: ServicioPedidos):
+    return service.resumen()
+
+
+@router.get("/{pedido_id}", response_model=PedidoRead)
+def obtener_pedido(pedido_id: int, usuario: UsuarioActivo, service: ServicioPedidos):
     try:
-        service.eliminar(pedido_id)
+        return service.obtener(pedido_id, usuario)
     except DominioError as e:
-        raise traducir(e)
+        raise a_http(e)  # 404; 403 PedidoAjeno
+
+
+@router.patch("/{pedido_id}/estado", response_model=PedidoRead)
+def cambiar_estado_pedido(
+    pedido_id: int, datos: CambioEstado, _admin: SoloAdmin, service: ServicioPedidos
+):
+    """RN-02 y RN-03: avanza o cancela según la máquina de estados."""
+    try:
+        return service.cambiar_estado(pedido_id, datos.estado)
+    except DominioError as e:
+        raise a_http(e)  # 404; 400 TransicionInvalida
+
+
+@router.patch("/{pedido_id}/cancelar", response_model=PedidoRead)
+def cancelar_pedido(pedido_id: int, usuario: UsuarioActivo, service: ServicioPedidos):
+    """RN-03 y RN-04: el dueño cancela su pedido, solo en PENDIENTE."""
+    try:
+        return service.cancelar(pedido_id, usuario)
+    except DominioError as e:
+        raise a_http(e)  # 404; 403 PedidoAjeno; 400 si no está PENDIENTE
