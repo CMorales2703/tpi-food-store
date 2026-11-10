@@ -1,39 +1,39 @@
-from datetime import datetime
-from typing import Optional
+"""Modelo Usuario (paquete Usuarios del UML)."""
 
-from sqlalchemy import CheckConstraint, Column, DateTime
-from sqlmodel import Field, SQLModel
+from datetime import datetime
+from typing import TYPE_CHECKING, Optional
+
+from sqlalchemy import Column, DateTime
+from sqlmodel import Field, Relationship, SQLModel
 
 from app.core.database import ahora
+
+if TYPE_CHECKING:  # solo para el tipado: evita la importación circular en ejecución
+    from app.modules.pedidos.models import Pedido
 
 ROLES = ("user", "admin")
 
 
 class Usuario(SQLModel, table=True):
-    """Usuario del sistema. El borrado lógico es el campo `disabled` (RN-11)."""
+    """Usuario del sistema.
+
+    El registro público crea usuarios con rol "user"; el admin sale del seed.
+    Baja lógica con `disabled` (el admin activa / desactiva).
+    """
 
     __tablename__ = "usuario"
-    __table_args__ = (CheckConstraint("role IN ('user', 'admin')", name="ck_usuario_role"),)
 
-    # PK
     id: Optional[int] = Field(default=None, primary_key=True)
-
-    # Datos (RN-02: username y email únicos)
-    username: str = Field(max_length=50, unique=True, nullable=False, index=True)
-    full_name: str = Field(max_length=100, nullable=False)
-    email: str = Field(max_length=254, unique=True, nullable=False, index=True)
-
-    # RN-01: hash bcrypt (60 caracteres), nunca la contraseña en texto plano
-    hashed_password: str = Field(max_length=60, nullable=False)
-
-    # Autorización
-    role: str = Field(default="user", max_length=20, nullable=False)
-    disabled: bool = Field(default=False, nullable=False)
-
-    # Audit
+    username: str = Field(max_length=50, unique=True, index=True)
+    full_name: str = Field(max_length=100)
+    email: str = Field(max_length=254, unique=True, index=True)
+    # Hash bcrypt (60 caracteres): la contraseña nunca se guarda en texto plano
+    hashed_password: str = Field(max_length=60)
+    role: str = Field(default="user", max_length=20)  # "user" | "admin"
+    disabled: bool = Field(default=False)
     created_at: datetime = Field(
         default_factory=ahora, sa_column=Column(DateTime(timezone=True), nullable=False)
     )
-    updated_at: datetime = Field(
-        default_factory=ahora, sa_column=Column(DateTime(timezone=True), nullable=False)
-    )
+
+    # Usuario 1:N Pedido
+    pedidos: list["Pedido"] = Relationship(back_populates="usuario")
