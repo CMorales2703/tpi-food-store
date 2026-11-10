@@ -72,7 +72,10 @@ export default function LoginPage() {
           void form.handleSubmit();
         }}
       >
-        <form.Field name="username" validators={{ onChange: requerido('Ingresá tu usuario') }}>
+        <form.Field
+          name="username"
+          validators={{ onChange: requerido('Ingresá tu usuario'), onBlur: requerido('Ingresá tu usuario') }}
+        >
           {(field) => (
             <Input
               id={field.name}
@@ -88,7 +91,10 @@ export default function LoginPage() {
           )}
         </form.Field>
 
-        <form.Field name="password" validators={{ onChange: requerido('Ingresá tu contraseña') }}>
+        <form.Field
+          name="password"
+          validators={{ onChange: requerido('Ingresá tu contraseña'), onBlur: requerido('Ingresá tu contraseña') }}
+        >
           {(field) => (
             <Input
               id={field.name}

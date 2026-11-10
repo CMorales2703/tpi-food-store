@@ -124,7 +124,12 @@ export default function RegisterPage() {
         }}
       >
         {CAMPOS.map((campo) => (
-          <form.Field key={campo.name} name={campo.name} validators={{ onChange: campo.validar }}>
+          // onBlur: también valida si se entra y se sale del campo sin escribir
+          <form.Field
+            key={campo.name}
+            name={campo.name}
+            validators={{ onChange: campo.validar, onBlur: campo.validar }}
+          >
             {(field) => (
               <Input
                 id={field.name}
@@ -152,6 +157,12 @@ export default function RegisterPage() {
               value !== fieldApi.form.getFieldValue('password')
                 ? 'Las contraseñas no coinciden'
                 : undefined,
+            onBlur: ({ value, fieldApi }) =>
+              value === ''
+                ? 'Repetí la contraseña'
+                : value !== fieldApi.form.getFieldValue('password')
+                  ? 'Las contraseñas no coinciden'
+                  : undefined,
           }}
         >
           {(field) => (
