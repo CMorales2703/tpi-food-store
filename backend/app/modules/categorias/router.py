@@ -1,64 +1,69 @@
-from fastapi import APIRouter, Depends, status
+"""Categorías: lecturas públicas (solo activas); escrituras solo para admin."""
 
-from app.core.dependencies import get_current_active_user, require_role
+from typing import Annotated
+
+from fastapi import APIRouter, Depends, Response, status
+
+from app.core.deps import require_role
 from app.core.exceptions import DominioError, a_http
 from app.modules.categorias.schemas import CategoriaCreate, CategoriaRead, CategoriaUpdate
 from app.modules.categorias.service import CategoriaService
 from app.modules.categorias.unit_of_work import CategoriaUnitOfWork
 
-# RN-07: lectura para cualquier usuario autenticado (y con la cuenta activa)
-router = APIRouter(
-    prefix="/categorias",
-    tags=["categorias"],
-    dependencies=[Depends(get_current_active_user)],
-)
+router = APIRouter(prefix="/categorias", tags=["categorias"])
 
-# RN-04: las escrituras exigen el rol admin (403 para un user)
 SOLO_ADMIN = [Depends(require_role(["admin"]))]
 
 
-def get_service() -> CategoriaService:
+def get_categorias_service() -> CategoriaService:
     return CategoriaService(CategoriaUnitOfWork())
 
 
-@router.get("/", response_model=list[CategoriaRead])
-def listar_categorias(service: CategoriaService = Depends(get_service)):
+ServicioCategorias = Annotated[CategoriaService, Depends(get_categorias_service)]
+
+
+@router.get("", response_model=list[CategoriaRead])
+def listar_categorias(service: ServicioCategorias):
     return service.listar()
 
 
 @router.get("/{categoria_id}", response_model=CategoriaRead)
-def obtener_categoria(categoria_id: int, service: CategoriaService = Depends(get_service)):
+def obtener_categoria(categoria_id: int, service: ServicioCategorias):
     try:
         return service.obtener(categoria_id)
     except DominioError as e:
-        raise a_http(e)
+        raise a_http(e)  # 404
 
 
 @router.post(
-    "/", response_model=CategoriaRead, status_code=status.HTTP_201_CREATED, dependencies=SOLO_ADMIN
+    "",
+    response_model=CategoriaRead,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=SOLO_ADMIN,
 )
-def crear_categoria(datos: CategoriaCreate, service: CategoriaService = Depends(get_service)):
+def crear_categoria(datos: CategoriaCreate, service: ServicioCategorias):
     try:
         return service.crear(datos)
     except DominioError as e:
-        raise a_http(e)
+        raise a_http(e)  # 409
 
 
 @router.put("/{categoria_id}", response_model=CategoriaRead, dependencies=SOLO_ADMIN)
-def actualizar_categoria(
-    categoria_id: int,
-    datos: CategoriaUpdate,
-    service: CategoriaService = Depends(get_service),
-):
+def actualizar_categoria(categoria_id: int, datos: CategoriaUpdate, service: ServicioCategorias):
     try:
         return service.actualizar(categoria_id, datos)
     except DominioError as e:
-        raise a_http(e)
+        raise a_http(e)  # 404, 409
 
 
-@router.delete("/{categoria_id}", status_code=status.HTTP_204_NO_CONTENT, dependencies=SOLO_ADMIN)
-def eliminar_categoria(categoria_id: int, service: CategoriaService = Depends(get_service)):
+@router.delete(
+    "/{categoria_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    response_class=Response,
+    dependencies=SOLO_ADMIN,
+)
+def eliminar_categoria(categoria_id: int, service: ServicioCategorias):
     try:
         service.eliminar(categoria_id)
     except DominioError as e:
-        raise a_http(e)
+        raise a_http(e)  # 404

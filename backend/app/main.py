@@ -6,6 +6,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.core.database import create_all_tables
 from app.modules.auth.router import router as auth_router
+from app.modules.categorias.router import router as categorias_router
+from app.modules.productos.router import router as productos_router
 from app.modules.usuarios.router import router as usuarios_router
 
 
@@ -38,10 +40,11 @@ app.add_middleware(
 )
 
 # Todas las rutas de la API bajo /api/v1.
-# Transitorio (Fase 1, paso 1): categorias, productos y pedidos se vuelven a
-# registrar en los pasos 5 y 6, cuando se reescriben sus módulos.
+# Transitorio: pedidos se registra en el paso 6, cuando se reescribe su módulo.
 for router in (
     auth_router,
     usuarios_router,
+    categorias_router,
+    productos_router,
 ):
     app.include_router(router, prefix=settings.API_PREFIX)
