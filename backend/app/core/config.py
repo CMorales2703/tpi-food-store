@@ -10,7 +10,7 @@ El .env NO se entrega: se incluye .env.example con valores de ejemplo.
 
 from typing import Literal
 
-from pydantic import Field
+from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -41,6 +41,20 @@ class Settings(BaseSettings):
     COOKIE_SAMESITE: Literal["lax", "strict", "none"] = "lax"
     # Prefijo de todas las rutas de la API
     API_PREFIX: str = "/api/v1"
+
+    @field_validator("DATABASE_URL")
+    @classmethod
+    def usar_psycopg2(cls, url: str) -> str:
+        """Fuerza el driver psycopg2 para PostgreSQL.
+
+        Desde SQLAlchemy 2.1, una URL `postgresql://` usa por defecto psycopg 3,
+        pero el proyecto usa psycopg2-binary (como pide el enunciado). Así la URL
+        del enunciado (postgresql://user:pass@localhost:5432/foodstore_db) funciona
+        tal cual. Una URL con el driver explícito (postgresql+xxx://) no se toca.
+        """
+        if url.startswith("postgresql://"):
+            return "postgresql+psycopg2://" + url.removeprefix("postgresql://")
+        return url
 
 
 settings = Settings()  # type: ignore[call-arg]  # los valores vienen del entorno
