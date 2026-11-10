@@ -1,196 +1,241 @@
 ### =========================================================
-### Pedidos y DetallePedido — REST Client (VS Code) — TP Unidad 9
-### Ejecutar en orden ("Send Request" sobre cada ###).
-### Requiere `python seed.py` (catálogo de estados, admin y productos 1 y 2).
-### La cookie de sesión la guarda REST Client entre peticiones.
+### Pedidos — REST Client
+### Ejecutar en orden, con la base recién cargada:
+###   dropdb foodstore_db && createdb foodstore_db && python -m app.db.seed
+### Productos del seed usados: 1 Pizza Muzzarella (stock 20), 4 Empanada de carne (60),
+### 6 Empanada de verdura (no disponible), 11 Cerveza artesanal (stock 3).
 ### =========================================================
 @base = http://localhost:8000/api/v1
-# Debe coincidir con ADMIN_USERNAME / ADMIN_PASSWORD del .env
-@adminUser = admin
-@adminPassword = Admin1234
+# Ids tomados de las respuestas (van arriba: debajo de un body, REST Client los manda en el body)
+@pedido1 = {{pedido1.response.body.$.id}}
+@pedido2 = {{pedido2.response.body.$.id}}
+@pedido3 = {{pedido3.response.body.$.id}}
 
-### 0) Sin sesión no se puede crear un pedido → 401
-POST {{base}}/auth/logout
+### ===================== CLIENTE 1 =====================
 
-###
-POST {{base}}/pedidos/
-Content-Type: application/json
-
-{
-  "detalles": [{ "producto_id": 1, "cantidad": 1 }]
-}
-
-### ===================== COMO USER (cliente) =====================
-
-### Registrar un cliente (201; si ya existe, 409 y se sigue igual)
+### Registro y login del cliente 1
 POST {{base}}/auth/register
 Content-Type: application/json
 
-{
-  "username": "comprador",
-  "full_name": "Cliente Comprador",
-  "email": "comprador@mail.com",
-  "password": "comprador123"
-}
+{ "username": "ana", "full_name": "Ana Pérez", "email": "ana@mail.com", "password": "ana12345" }
 
-### Login como user
+###
 POST {{base}}/auth/token
 Content-Type: application/x-www-form-urlencoded
 
-username=comprador&password=comprador123
+username=ana&password=ana12345
 
-### 1) Un user crea un pedido con dos detalles → 201 (RN-05)
-# El backend asigna usuario, fecha, estado PENDIENTE (del catálogo),
-# precio_unitario (precio_base actual) y total = Σ cantidad × precio_unitario.
-# @name nuevoPedido
-POST {{base}}/pedidos/
+### 1) RN-01: crear pedido → 201, PENDIENTE, líneas con nombre y precio copiados,
+###    total = 2 × 8500 + 12 × 1300 = 32600
+# @name pedido1
+POST {{base}}/pedidos
 Content-Type: application/json
 
 {
-  "detalles": [
+  "items": [
     { "producto_id": 1, "cantidad": 2 },
-    { "producto_id": 2, "cantidad": 1 }
-  ]
+    { "producto_id": 4, "cantidad": 12 }
+  ],
+  "forma_pago": "EFECTIVO",
+  "direccion_entrega": "Av. San Martín 1234",
+  "notas": "Tocar timbre 2B"
 }
 
-@pedidoId = {{nuevoPedido.response.body.$.id}}
+### 2) El stock bajó: Pizza Muzzarella 20 → 18
+GET {{base}}/productos/1
 
-### 2) El user lista sólo SUS pedidos → 200
-GET {{base}}/pedidos/
-
-### 3) Obtener su pedido con los detalles → 200
-GET {{base}}/pedidos/{{pedidoId}}
-
-### 4) Pedido de otro usuario (el pedido 1 lo creó el admin en seed.py) → 404
-GET {{base}}/pedidos/1
-
-### 5) Un user NO puede cambiar el estado → 403
-PUT {{base}}/pedidos/{{pedidoId}}
+### 3) Producto repetido → 400
+POST {{base}}/pedidos
 Content-Type: application/json
 
 {
-  "estado": "ENTREGADO"
+  "items": [{ "producto_id": 1, "cantidad": 1 }, { "producto_id": 1, "cantidad": 2 }],
+  "forma_pago": "EFECTIVO",
+  "direccion_entrega": "Av. San Martín 1234"
 }
 
-### 6) Un user NO puede eliminar pedidos → 403
-DELETE {{base}}/pedidos/{{pedidoId}}
-
-### ===================== CASOS 422 =====================
-
-### 7) Producto repetido en dos detalles → 422
-POST {{base}}/pedidos/
+### 4) Stock insuficiente (la cerveza tiene 3) → 400
+POST {{base}}/pedidos
 Content-Type: application/json
 
 {
-  "detalles": [
-    { "producto_id": 1, "cantidad": 1 },
-    { "producto_id": 1, "cantidad": 3 }
-  ]
+  "items": [{ "producto_id": 11, "cantidad": 5 }],
+  "forma_pago": "TRANSFERENCIA",
+  "direccion_entrega": "Av. San Martín 1234"
 }
 
-### 8) Pedido sin detalles → 422
-POST {{base}}/pedidos/
+### 5) Producto no disponible → 400
+POST {{base}}/pedidos
 Content-Type: application/json
 
 {
-  "detalles": []
+  "items": [{ "producto_id": 6, "cantidad": 1 }],
+  "forma_pago": "EFECTIVO",
+  "direccion_entrega": "Av. San Martín 1234"
 }
 
-### 9) Cantidad menor que 1 → 422
-POST {{base}}/pedidos/
+### 6) Producto inexistente → 404
+POST {{base}}/pedidos
 Content-Type: application/json
 
 {
-  "detalles": [
-    { "producto_id": 1, "cantidad": 0 }
-  ]
+  "items": [{ "producto_id": 9999, "cantidad": 1 }],
+  "forma_pago": "EFECTIVO",
+  "direccion_entrega": "Av. San Martín 1234"
 }
 
-### ===================== 404 CON ROLLBACK =====================
-
-### 10) Detalle con producto inexistente → 404 y NO se guarda nada (Unit of Work)
-# Aunque el primer detalle es válido, el pedido tampoco queda creado:
-# comparar el listado del paso 2 con el del paso 11.
-POST {{base}}/pedidos/
+### 7) TRANSACCIÓN: el 1er ítem es válido y el 2do falla → 400 y NO se descuenta nada
+POST {{base}}/pedidos
 Content-Type: application/json
 
 {
-  "detalles": [
-    { "producto_id": 1, "cantidad": 1 },
-    { "producto_id": 99999, "cantidad": 1 }
-  ]
+  "items": [{ "producto_id": 1, "cantidad": 3 }, { "producto_id": 11, "cantidad": 99 }],
+  "forma_pago": "EFECTIVO",
+  "direccion_entrega": "Av. San Martín 1234"
 }
 
-### 11) Listar de nuevo: no apareció ningún pedido extra
-GET {{base}}/pedidos/
+### 8) La pizza sigue en 18 (el rollback deshizo el descuento del 1er ítem)
+GET {{base}}/productos/1
 
-### ===================== COMO ADMIN =====================
+### 9) RN-06: forma de pago inválida, dirección corta y sin ítems → 422
+POST {{base}}/pedidos
+Content-Type: application/json
 
-### Login como admin
+{ "items": [], "forma_pago": "TARJETA", "direccion_entrega": "abc" }
+
+### 10) Segundo pedido de Ana (para cancelarlo después)
+# @name pedido2
+POST {{base}}/pedidos
+Content-Type: application/json
+
+{
+  "items": [{ "producto_id": 11, "cantidad": 3 }],
+  "forma_pago": "TRANSFERENCIA",
+  "direccion_entrega": "Av. San Martín 1234"
+}
+
+### 11) Mis pedidos → 200, solo los de Ana (2)
+GET {{base}}/pedidos
+
+### 12) Filtro por estado
+GET {{base}}/pedidos?estado=PENDIENTE&limit=5
+
+### 13) Un user no puede cambiar el estado → 403
+PATCH {{base}}/pedidos/{{pedido1}}/estado
+Content-Type: application/json
+
+{ "estado": "EN_PREPARACION" }
+
+### 14) Un user no ve el resumen → 403
+GET {{base}}/pedidos/resumen
+
+### 15) RN-03: Ana cancela su pedido PENDIENTE → 200, CANCELADO
+PATCH {{base}}/pedidos/{{pedido2}}/cancelar
+
+### 16) El stock de la cerveza volvió a 3
+GET {{base}}/productos/11
+
+### 17) Cancelar de nuevo (ya no está PENDIENTE) → 400
+PATCH {{base}}/pedidos/{{pedido2}}/cancelar
+
+### ===================== CLIENTE 2 =====================
+
+### Registro y login del cliente 2
+POST {{base}}/auth/register
+Content-Type: application/json
+
+{ "username": "beto", "full_name": "Beto Gómez", "email": "beto@mail.com", "password": "beto12345" }
+
+###
 POST {{base}}/auth/token
 Content-Type: application/x-www-form-urlencoded
 
-username={{adminUser}}&password={{adminPassword}}
+username=beto&password=beto12345
 
-### 12) El admin lista TODOS los pedidos (también los del cliente) → 200
-GET {{base}}/pedidos/
+### 18) RN-04: Beto no ve el pedido de Ana → 403
+GET {{base}}/pedidos/{{pedido1}}
 
-### 13) Estados posibles (catálogo de sólo lectura)
-GET {{base}}/estados-pedido/
+### 19) RN-04: Beto no puede cancelar el pedido de Ana → 403
+PATCH {{base}}/pedidos/{{pedido1}}/cancelar
 
-### 14) Confirmar el pedido del cliente → 200
-PUT {{base}}/pedidos/{{pedidoId}}
+### 20) Beto no ve pedidos ajenos en su listado → total 0
+GET {{base}}/pedidos
+
+### 21) Pedido de Beto (para cancelarlo como admin desde EN_PREPARACION)
+# @name pedido3
+POST {{base}}/pedidos
 Content-Type: application/json
 
 {
-  "estado": "CONFIRMADO"
+  "items": [{ "producto_id": 4, "cantidad": 6 }],
+  "forma_pago": "EFECTIVO",
+  "direccion_entrega": "Calle Falsa 123"
 }
 
-### 15) Estado que no está en el catálogo → 422
-PUT {{base}}/pedidos/{{pedidoId}}
+### ===================== ADMIN =====================
+
+### Login admin
+POST {{base}}/auth/token
+Content-Type: application/x-www-form-urlencoded
+
+username=admin&password=Admin1234!
+
+### 22) El admin ve todos los pedidos → 200 (3)
+GET {{base}}/pedidos
+
+### 23) El admin ve el detalle de cualquier pedido → 200
+GET {{base}}/pedidos/{{pedido1}}
+
+### 24) Inexistente → 404
+GET {{base}}/pedidos/9999
+
+### 25) RN-02: PENDIENTE → ENTREGADO no es válida → 400
+PATCH {{base}}/pedidos/{{pedido1}}/estado
 Content-Type: application/json
 
-{
-  "estado": "EN_CAMINO"
-}
+{ "estado": "ENTREGADO" }
 
-### 16) Entregar → 200 (ENTREGADO es terminal en el catálogo)
-PUT {{base}}/pedidos/{{pedidoId}}
+### 26) PENDIENTE → EN_PREPARACION → 200 (updated_at cambia)
+PATCH {{base}}/pedidos/{{pedido1}}/estado
 Content-Type: application/json
 
-{
-  "estado": "entregado"
-}
+{ "estado": "EN_PREPARACION" }
 
-### 17) Cambiar el estado de un pedido terminal → 409
-PUT {{base}}/pedidos/{{pedidoId}}
+### 27) EN_PREPARACION → ENTREGADO → 200
+PATCH {{base}}/pedidos/{{pedido1}}/estado
 Content-Type: application/json
 
-{
-  "estado": "CANCELADO"
-}
+{ "estado": "ENTREGADO" }
 
-### 18) Pedido inexistente → 404
-GET {{base}}/pedidos/99999
-
-### ===================== BORRADO LÓGICO =====================
-
-### 19) Eliminar pedido (completa deleted_at, el registro sigue en la base) → 204
-DELETE {{base}}/pedidos/{{pedidoId}}
-
-### 20) El pedido eliminado ya no se puede consultar → 404
-GET {{base}}/pedidos/{{pedidoId}}
-
-### 21) Ni modificar → 404
-PUT {{base}}/pedidos/{{pedidoId}}
+### 28) Estado terminal: ENTREGADO → CANCELADO → 400
+PATCH {{base}}/pedidos/{{pedido1}}/estado
 Content-Type: application/json
 
-{
-  "estado": "CONFIRMADO"
-}
+{ "estado": "CANCELADO" }
 
-### 22) Ni volver a eliminar → 404
-DELETE {{base}}/pedidos/{{pedidoId}}
+### 29) Estado que no existe → 422
+PATCH {{base}}/pedidos/{{pedido1}}/estado
+Content-Type: application/json
 
-### 23) Y no aparece en el listado → 200
-GET {{base}}/pedidos/
+{ "estado": "PERDIDO" }
+
+### 30) Pedido de Beto: PENDIENTE → EN_PREPARACION → CANCELADO (el admin cancela y restituye)
+PATCH {{base}}/pedidos/{{pedido3}}/estado
+Content-Type: application/json
+
+{ "estado": "EN_PREPARACION" }
+
+###
+PATCH {{base}}/pedidos/{{pedido3}}/estado
+Content-Type: application/json
+
+{ "estado": "CANCELADO" }
+
+### 31) Empanada de carne: 60 − 12 (Ana, entregado) = 48 (las 6 de Beto se restituyeron)
+GET {{base}}/productos/4
+
+### 32) Resumen → entregados 1, cancelados 2, pedidos_hoy 3, ingresos_entregados 32600
+GET {{base}}/pedidos/resumen
+
+### 33) RN-05: no hay edición ni borrado de pedidos → 405
+DELETE {{base}}/pedidos/{{pedido1}}
