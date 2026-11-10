@@ -31,9 +31,7 @@ def ahora() -> datetime:
 
 def create_all_tables() -> None:
     """Crea las tablas que falten (no modifica las existentes)."""
-    # Importar los modelos para que queden registrados en la metadata.
-    # Transitorio (Fase 1, paso 1): categorias, productos y pedidos se vuelven
-    # a registrar en el paso 2, cuando se reescriben sus modelos según el UML.
-    from app.modules.usuarios import models as _usuarios  # noqa: F401
+    # Registrar las 5 tablas en la metadata (y resolver sus relaciones)
+    import app.db.models  # noqa: F401
 
     SQLModel.metadata.create_all(engine)
