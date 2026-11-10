@@ -1,0 +1,23 @@
+# Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.db
+
+# Node
+node_modules/
+dist/
+
+# Variables de entorno (nunca al repo ni al zip)
+.env
+.env.local
+
+# Editores / SO
+.vscode/
+.idea/
+.DS_Store
+
+# Material personal: no va al repo
+/CLAUDE.md
+/docs/

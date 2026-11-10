@@ -1,0 +1,323 @@
+### =========================================================
+### Catálogo — Categorías, Productos, Producto-Categoría, Ingredientes
+### y catálogo EstadoPedido. REST Client (VS Code) — TP Unidad 9.
+### Ejecutar en orden. Funciona con o sin los datos de seed.py.
+### La cookie de sesión la guarda REST Client entre peticiones.
+### =========================================================
+@base = http://localhost:8000/api/v1
+# Debe coincidir con ADMIN_USERNAME / ADMIN_PASSWORD del .env
+@adminUser = admin
+@adminPassword = Admin1234
+
+### ===================== SIN SESIÓN =====================
+
+### Asegurar que no hay sesión
+POST {{base}}/auth/logout
+
+### Listar categorías sin sesión → 401 (RN-07: la lectura requiere sesión)
+GET {{base}}/categorias/
+
+### ===================== COMO USER =====================
+
+### Registrar un usuario de prueba (201; si ya existe, 409 y se sigue igual)
+POST {{base}}/auth/register
+Content-Type: application/json
+
+{
+  "username": "lector",
+  "full_name": "Usuario Lector",
+  "email": "lector@mail.com",
+  "password": "lector123"
+}
+
+### Login como user
+POST {{base}}/auth/token
+Content-Type: application/x-www-form-urlencoded
+
+username=lector&password=lector123
+
+### Un user puede leer → 200 (RN-07)
+GET {{base}}/categorias/
+
+### Un user NO puede crear → 403 (RN-04)
+POST {{base}}/categorias/
+Content-Type: application/json
+
+{
+  "nombre": "Categoría de un user"
+}
+
+### Un user NO puede eliminar productos → 403 (RN-04)
+DELETE {{base}}/productos/1
+
+### Un user NO puede crear ingredientes → 403 (RN-04)
+POST {{base}}/ingredientes/
+Content-Type: application/json
+
+{
+  "nombre": "Ingrediente de un user"
+}
+
+### ================= CATÁLOGO ESTADOPEDIDO (sólo GET) =================
+
+### Listar estados de pedido (cargados por seed.py) → 200
+GET {{base}}/estados-pedido/
+
+### Obtener un estado → 200
+GET {{base}}/estados-pedido/ENTREGADO
+
+### Escribir sobre el catálogo → 405 Method Not Allowed (RN-06)
+POST {{base}}/estados-pedido/
+Content-Type: application/json
+
+{
+  "codigo": "EN_CAMINO",
+  "descripcion": "En camino",
+  "orden": 5,
+  "es_terminal": false
+}
+
+### ===================== COMO ADMIN =====================
+
+### Login como admin
+POST {{base}}/auth/token
+Content-Type: application/x-www-form-urlencoded
+
+username={{adminUser}}&password={{adminPassword}}
+
+### ===================== CATEGORÍAS =====================
+
+### Crear ingrediente → 201 (se usa más abajo en un producto)
+# @name muzzarella
+POST {{base}}/ingredientes/
+Content-Type: application/json
+
+{
+  "nombre": "Provolone"
+}
+
+@ingredienteId = {{muzzarella.response.body.$.id}}
+
+
+### Listar categorías
+GET {{base}}/categorias/
+
+### Crear categoría → 201
+# @name pizzas
+POST {{base}}/categorias/
+Content-Type: application/json
+
+{
+  "nombre": "Calzones",
+  "descripcion": "Pizzas cerradas"
+}
+
+### Crear otra categoría sin descripción → 201 (descripción default "")
+# @name bebidas
+POST {{base}}/categorias/
+Content-Type: application/json
+
+{
+  "nombre": "Licuados"
+}
+
+@pizzasId = {{pizzas.response.body.$.id}}
+@bebidasId = {{bebidas.response.body.$.id}}
+
+### Nombre duplicado sin distinguir mayúsculas → 409 
+POST {{base}}/categorias/
+Content-Type: application/json
+
+{
+  "nombre": "  calzones "
+}
+
+### Nombre compuesto sólo por espacios → 422 
+POST {{base}}/categorias/
+Content-Type: application/json
+
+{
+  "nombre": "   "
+}
+
+### Obtener categoría
+GET {{base}}/categorias/{{pizzasId}}
+
+### Categoría inexistente → 404
+GET {{base}}/categorias/99999
+
+### Actualizar categoría → 200
+PUT {{base}}/categorias/{{bebidasId}}
+Content-Type: application/json
+
+{
+  "nombre": "Licuados",
+  "descripcion": "Con agua o con leche"
+}
+
+### ===================== PRODUCTOS =====================
+
+### Crear producto (la primera categoría queda como principal) → 201
+# @name muzza
+POST {{base}}/productos/
+Content-Type: application/json
+
+{
+  "nombre": "Calzone de jamón",
+  "descripcion": "Jamón y muzzarella",
+  "precio_base": 8500.50,
+  "disponible": true,
+  "categoria_ids": [{{pizzasId}}],
+  "ingrediente_ids": [{{ingredienteId}}]
+}
+
+### Crear producto sin "disponible" → 201 con disponible = true
+# @name gaseosa
+POST {{base}}/productos/
+Content-Type: application/json
+
+{
+  "nombre": "Licuado de banana",
+  "precio_base": 3200,
+  "categoria_ids": [{{bebidasId}}]
+}
+
+@muzzaId = {{muzza.response.body.$.id}}
+
+### Precio negativo → 422
+POST {{base}}/productos/
+Content-Type: application/json
+
+{
+  "nombre": "Pizza rota",
+  "precio_base": -10,
+  "categoria_ids": [{{pizzasId}}]
+}
+
+### Sin categorías → 422 (multiplicidad 1..*)
+POST {{base}}/productos/
+Content-Type: application/json
+
+{
+  "nombre": "Producto huérfano",
+  "precio_base": 100,
+  "categoria_ids": []
+}
+
+### Nombre vacío → 422
+POST {{base}}/productos/
+Content-Type: application/json
+
+{
+  "nombre": "  ",
+  "precio_base": 100,
+  "categoria_ids": [{{pizzasId}}]
+}
+
+### Listar productos (filtros opcionales ?categoria_id= y ?disponibles=true)
+GET {{base}}/productos/?categoria_id={{pizzasId}}&disponibles=true
+
+### Actualizar producto y reemplazar sus categorías e ingredientes → 200
+# Los vínculos que se quitan reciben borrado lógico (siguen en la base)
+PUT {{base}}/productos/{{muzzaId}}
+Content-Type: application/json
+
+{
+  "precio_base": 9200,
+  "disponible": false,
+  "categoria_ids": [{{pizzasId}}, {{bebidasId}}],
+  "ingrediente_ids": []
+}
+
+### Ingrediente inexistente al crear producto → 404 y no se guarda nada
+POST {{base}}/productos/
+Content-Type: application/json
+
+{
+  "nombre": "Producto con ingrediente fantasma",
+  "precio_base": 100,
+  "categoria_ids": [{{pizzasId}}],
+  "ingrediente_ids": [99999]
+}
+
+### Producto inexistente → 404
+PUT {{base}}/productos/99999
+Content-Type: application/json
+
+{
+  "precio_base": 1
+}
+
+### ================= PRODUCTO - CATEGORÍA =================
+
+### Listar categorías de un producto
+GET {{base}}/productos/{{muzzaId}}/categorias/
+
+### Marcar la segunda categoría como principal (desmarca la anterior)
+PATCH {{base}}/productos/{{muzzaId}}/categorias/{{bebidasId}}
+Content-Type: application/json
+
+{
+  "es_principal": true
+}
+
+### Desasociar → 204: borrado lógico del vínculo (la otra pasa a ser la principal)
+DELETE {{base}}/productos/{{muzzaId}}/categorias/{{bebidasId}}
+
+### Desasociar la última categoría → 409 (1..*)
+DELETE {{base}}/productos/{{muzzaId}}/categorias/{{pizzasId}}
+
+### Volver a asociar → 201 (se reactiva el vínculo borrado)
+POST {{base}}/productos/{{muzzaId}}/categorias/
+Content-Type: application/json
+
+{
+  "categoria_id": {{bebidasId}}
+}
+
+### Eliminar categoría con productos → 409
+DELETE {{base}}/categorias/{{pizzasId}}
+
+### ===================== INGREDIENTES =====================
+
+### Listar ingredientes
+GET {{base}}/ingredientes/
+
+
+### Nombre obligatorio → 422
+POST {{base}}/ingredientes/
+Content-Type: application/json
+
+{
+  "nombre": "   "
+}
+
+### Nombre duplicado → 409
+POST {{base}}/ingredientes/
+Content-Type: application/json
+
+{
+  "nombre": "PROVOLONE"
+}
+
+### Actualizar ingrediente → 200
+PUT {{base}}/ingredientes/{{ingredienteId}}
+Content-Type: application/json
+
+{
+  "nombre": "Provolone ahumado"
+}
+
+### Ingrediente inexistente → 404
+DELETE {{base}}/ingredientes/99999
+
+### Eliminar ingrediente (borrado lógico) → 204
+DELETE {{base}}/ingredientes/{{ingredienteId}}
+
+### ===================== BORRADOS =====================
+
+### Eliminar producto (borrado lógico) → 204
+DELETE {{base}}/productos/{{muzzaId}}
+
+### Ahora la categoría ya no tiene productos activos → 204 (borrado lógico)
+DELETE {{base}}/categorias/{{pizzasId}}

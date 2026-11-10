@@ -1,0 +1,155 @@
+### =========================================================
+### Autenticación y usuarios — REST Client (VS Code) — TP Unidad 9
+### Ejecutar en orden. REST Client guarda la cookie access_token entre
+### peticiones (opción rest-client.rememberCookiesForSubsequentRequests,
+### activada por defecto), igual que el navegador.
+### Requiere haber ejecutado `python seed.py` (crea el admin).
+### =========================================================
+@base = http://localhost:8000/api/v1
+# Debe coincidir con ADMIN_USERNAME / ADMIN_PASSWORD del .env
+@adminUser = admin
+@adminPassword = Admin1234
+
+### Health check (público)
+GET {{base}}/health/
+
+### ===================== REGISTRO (público) =====================
+
+### 1) Registrar usuario → 201 con rol user y sin contraseña en la respuesta (RN-08)
+# @name registro
+POST {{base}}/auth/register
+Content-Type: application/json
+
+{
+  "username": "cliente1",
+  "full_name": "Cliente Uno",
+  "email": "cliente1@mail.com",
+  "password": "cliente123"
+}
+
+@clienteId = {{registro.response.body.$.id}}
+
+### 2) Username repetido (sin distinguir mayúsculas) → 409 (RN-02)
+POST {{base}}/auth/register
+Content-Type: application/json
+
+{
+  "username": "CLIENTE1",
+  "full_name": "Otro",
+  "email": "otro@mail.com",
+  "password": "cliente123"
+}
+
+### 3) Email repetido → 409 (RN-02)
+POST {{base}}/auth/register
+Content-Type: application/json
+
+{
+  "username": "cliente2",
+  "full_name": "Cliente Dos",
+  "email": "CLIENTE1@mail.com",
+  "password": "cliente123"
+}
+
+### 4) Email inválido y contraseña de menos de 8 caracteres → 422 (RN-09)
+POST {{base}}/auth/register
+Content-Type: application/json
+
+{
+  "username": "cliente3",
+  "full_name": "Cliente Tres",
+  "email": "no-es-un-email",
+  "password": "corta"
+}
+
+### 5) Intentar registrarse como admin: el campo role se ignora → 201 con role "user" (RN-08)
+POST {{base}}/auth/register
+Content-Type: application/json
+
+{
+  "username": "vivo",
+  "full_name": "Quiere ser admin",
+  "email": "vivo@mail.com",
+  "password": "vivo12345",
+  "role": "admin"
+}
+
+### ===================== LOGIN / ME / LOGOUT =====================
+
+### 6) /me sin sesión → 401 (RN-10)
+GET {{base}}/auth/me
+
+### 7) Login con contraseña incorrecta → 401
+POST {{base}}/auth/token
+Content-Type: application/x-www-form-urlencoded
+
+username=cliente1&password=incorrecta
+
+### 8) Login correcto → 200 + cabecera Set-Cookie: access_token=...; HttpOnly (RN-03)
+# El cuerpo trae los datos del usuario, nunca el token.
+POST {{base}}/auth/token
+Content-Type: application/x-www-form-urlencoded
+
+username=cliente1&password=cliente123
+
+### 9) /me con la cookie → 200 con los datos del usuario
+GET {{base}}/auth/me
+
+### 10) Un user NO puede listar usuarios → 403
+GET {{base}}/admin/usuarios
+
+### 11) Logout → 200 + Set-Cookie que borra la cookie (Max-Age=0)
+POST {{base}}/auth/logout
+
+### 12) Después del logout, /me → 401
+GET {{base}}/auth/me
+
+### ===================== ADMINISTRACIÓN (sólo admin) =====================
+
+### 13) Login como admin → 200
+POST {{base}}/auth/token
+Content-Type: application/x-www-form-urlencoded
+
+username={{adminUser}}&password={{adminPassword}}
+
+### 14) Listar usuarios → 200 (activos y desactivados)
+GET {{base}}/admin/usuarios
+
+### 15) Desactivar a cliente1 → 200 con disabled: true (borrado lógico de Usuario)
+POST {{base}}/admin/usuarios/{{clienteId}}/desactivar
+
+### 16) El admin no puede desactivarse a sí mismo → 409
+# (el admin creado por seed.py tiene id 1)
+POST {{base}}/admin/usuarios/1/desactivar
+
+### 17) Usuario inexistente → 404
+POST {{base}}/admin/usuarios/99999/activar
+
+### 18) cliente1 desactivado intenta loguearse → 400 "Cuenta de usuario desactivada"
+POST {{base}}/auth/token
+Content-Type: application/x-www-form-urlencoded
+
+username=cliente1&password=cliente123
+
+### 19) Volver a entrar como admin y reactivar a cliente1 → 200 con disabled: false
+POST {{base}}/auth/token
+Content-Type: application/x-www-form-urlencoded
+
+username={{adminUser}}&password={{adminPassword}}
+
+###
+POST {{base}}/admin/usuarios/{{clienteId}}/activar
+
+### 20) cliente1 ya puede iniciar sesión → 200
+POST {{base}}/auth/token
+Content-Type: application/x-www-form-urlencoded
+
+username=cliente1&password=cliente123
+
+### 21) Token inválido en el encabezado (sin cookie) → 401
+# Se borra la cookie primero con logout para que no se envíe
+POST {{base}}/auth/logout
+
+###
+GET {{base}}/auth/me
+Authorization: Bearer token.falso.123
