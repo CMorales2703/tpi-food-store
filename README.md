@@ -48,7 +48,8 @@ python --version                   # tiene que decir 3.11, 3.12 o 3.13
 pip install --upgrade pip
 pip install -r requirements.txt
 
-# Variables de entorno: copiar y completar DATABASE_URL (ver la tabla de abajo)
+# Variables de entorno: copiar y EDITAR DATABASE_URL con un usuario real de PostgreSQL.
+# El valor de ejemplo (user:pass) no funciona tal cual. Ver "Variables de entorno".
 cp .env.example .env               # Windows: copy .env.example .env
 
 # Base de datos
@@ -222,6 +223,7 @@ dropdb foodstore_db && createdb foodstore_db && python -m app.db.seed
 | `No matching distribution found for fastapi[standard]==…` al instalar, o `TypeError: unsupported operand type(s) for \|` al iniciar | El entorno virtual se creó con Python 3.9. Borrar `.venv` y crearlo con `python3.12 -m venv .venv` |
 | `Connection refused` en el puerto 5432 | PostgreSQL no está corriendo. Con Homebrew: `brew services start postgresql@16` |
 | `role "postgres" does not exist` | Con Homebrew el usuario es el de la Mac: usar `createdb foodstore_db` sin `-U`, o crear el rol con `createuser -s postgres` |
+| `role "user" does not exist` (o `password authentication failed`) | `DATABASE_URL` todavía tiene el valor de ejemplo. Poner el usuario y la contraseña reales de PostgreSQL |
 | `No module named 'psycopg'` | La `DATABASE_URL` tiene `+psycopg`. Usar `postgresql://…`, sin indicar el driver |
 | El backend no arranca y menciona `SECRET_KEY` | Falta el `.env`, o la clave tiene menos de 32 caracteres |
 | "No se pudo conectar con el servidor" en el frontend | El backend no está corriendo, `VITE_API_URL` no termina en `/api/v1`, o el frontend no está en `http://localhost:5173` (CORS) |
