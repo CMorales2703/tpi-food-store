@@ -11,7 +11,7 @@ Sistema de pedidos de comida. Los clientes recorren el catálogo, arman un carri
 | | |
 |---|---|
 | **Repositorio** | https://github.com/CMorales2703/tpi-food-store |
-| **Video de demostración** | _(link pendiente)_ |
+| **Video de demostración** | https://youtu.be/f-YMSP30B60 |
 
 ---
 
