@@ -38,12 +38,18 @@ Se levantan dos proyectos en dos terminales: primero el backend y después el fr
 ```bash
 cd backend
 
-# Entorno virtual y dependencias (versiones fijadas en requirements.txt)
-python3 -m venv .venv
+# Entorno virtual con Python 3.11, 3.12 o 3.13, indicando la versión explícitamente:
+# en macOS, `python3` suele ser el 3.9 de Apple y la instalación falla.
+python3.12 -m venv .venv           # Windows: py -3.12 -m venv .venv
 source .venv/bin/activate          # Windows: .venv\Scripts\activate
+python --version                   # tiene que decir 3.11, 3.12 o 3.13
+
+# Dependencias (versiones fijadas en requirements.txt)
+pip install --upgrade pip
 pip install -r requirements.txt
 
-# Variables de entorno: copiar y completar DATABASE_URL (ver la tabla de abajo)
+# Variables de entorno: copiar y EDITAR DATABASE_URL con un usuario real de PostgreSQL.
+# El valor de ejemplo (user:pass) no funciona tal cual. Ver "Variables de entorno".
 cp .env.example .env               # Windows: copy .env.example .env
 
 # Base de datos
@@ -182,6 +188,7 @@ frontend/src/
 - **Estado del servidor:** lo maneja TanStack Query (catálogo, pedidos, usuarios, resumen), con `queryKey` descriptivas e invalidación después de cada mutación. Por ejemplo, al crear o cancelar un pedido se invalidan los pedidos y los productos, porque cambió el stock.
 - **Estado del cliente:** lo maneja Zustand. En la sesión se persiste **solo el usuario**, nunca el token. El carrito se persiste completo.
 - **`useEffect`:** el único de la aplicación es `checkSession`, al montar `App`.
+- **Imports:** entre carpetas se usa el alias `@/` (`@/shared/...`, `@/features/...`, `@/store/...`), configurado en `vite.config.ts` y en `tsconfig.app.json`. Dentro de una misma carpeta se usan imports relativos cortos (`./ProtectedRoute`).
 
 ### Sesión con cookie HttpOnly
 
@@ -214,9 +221,10 @@ dropdb foodstore_db && createdb foodstore_db && python -m app.db.seed
 
 | Síntoma | Causa y solución |
 |---|---|
-| `TypeError: unsupported operand type(s) for \|` al iniciar el backend | El entorno virtual se creó con Python 3.9. Borrar `.venv` y crearlo con Python 3.11 a 3.13 |
+| `No matching distribution found for fastapi[standard]==…` al instalar, o `TypeError: unsupported operand type(s) for \|` al iniciar | El entorno virtual se creó con Python 3.9. Borrar `.venv` y crearlo con `python3.12 -m venv .venv` |
 | `Connection refused` en el puerto 5432 | PostgreSQL no está corriendo. Con Homebrew: `brew services start postgresql@16` |
 | `role "postgres" does not exist` | Con Homebrew el usuario es el de la Mac: usar `createdb foodstore_db` sin `-U`, o crear el rol con `createuser -s postgres` |
+| `role "user" does not exist` (o `password authentication failed`) | `DATABASE_URL` todavía tiene el valor de ejemplo. Poner el usuario y la contraseña reales de PostgreSQL |
 | `No module named 'psycopg'` | La `DATABASE_URL` tiene `+psycopg`. Usar `postgresql://…`, sin indicar el driver |
 | El backend no arranca y menciona `SECRET_KEY` | Falta el `.env`, o la clave tiene menos de 32 caracteres |
 | "No se pudo conectar con el servidor" en el frontend | El backend no está corriendo, `VITE_API_URL` no termina en `/api/v1`, o el frontend no está en `http://localhost:5173` (CORS) |

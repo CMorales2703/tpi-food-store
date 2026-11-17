@@ -1,10 +1,10 @@
 import { useForm } from '@tanstack/react-form';
-import { validarAlSalir } from '../../../shared/utils/form';
-import MensajeError from '../../../shared/components/MensajeError';
-import Button from '../../../shared/ui/Button';
-import { Campo, Input, TextArea } from '../../../shared/ui/Input';
-import { combinar, maxLargo, minLargo, requerido } from '../../../shared/utils/validators';
-import { FORMAS_PAGO, type FormaPago } from '../types/pedido';
+import { validarAlSalir } from '@/shared/utils/form';
+import MensajeError from '@/shared/components/MensajeError';
+import Button from '@/shared/ui/Button';
+import { Campo, Input, TextArea } from '@/shared/ui/Input';
+import { combinar, maxLargo, minLargo, requerido } from '@/shared/utils/validators';
+import { FORMAS_PAGO, type FormaPago } from '@/features/pedidos/types/pedido';
 
 export interface DatosCheckout {
   direccion_entrega: string;

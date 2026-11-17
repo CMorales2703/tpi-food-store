@@ -1,8 +1,8 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import * as authApi from '../features/auth/api/authApi';
-import type { Rol, UserPublic } from '../features/auth/types/auth';
-import { queryClient } from '../shared/api/queryClient';
+import * as authApi from '@/features/auth/api/authApi';
+import type { Rol, UserPublic } from '@/features/auth/types/auth';
+import { queryClient } from '@/shared/api/queryClient';
 import { useCartStore } from './cartStore';
 
 /** Datos del usuario que necesita la interfaz. NUNCA el token: viaja en la cookie HttpOnly. */

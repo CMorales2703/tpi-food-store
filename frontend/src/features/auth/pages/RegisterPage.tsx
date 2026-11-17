@@ -1,10 +1,10 @@
 import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
 import { useForm } from '@tanstack/react-form';
-import { validarAlSalir } from '../../../shared/utils/form';
-import MensajeError from '../../../shared/components/MensajeError';
-import Button from '../../../shared/ui/Button';
-import { Input } from '../../../shared/ui/Input';
+import { validarAlSalir } from '@/shared/utils/form';
+import MensajeError from '@/shared/components/MensajeError';
+import Button from '@/shared/ui/Button';
+import { Input } from '@/shared/ui/Input';
 import {
   combinar,
   emailValido,
@@ -13,11 +13,11 @@ import {
   requerido,
   usernameValido,
   type Validador,
-} from '../../../shared/utils/validators';
-import { useAuthStore } from '../../../store/authStore';
-import { registrar } from '../api/authApi';
-import AuthCard from '../components/AuthCard';
-import type { UserCreate, UserPublic } from '../types/auth';
+} from '@/shared/utils/validators';
+import { useAuthStore } from '@/store/authStore';
+import { registrar } from '@/features/auth/api/authApi';
+import AuthCard from '@/features/auth/components/AuthCard';
+import type { UserCreate, UserPublic } from '@/features/auth/types/auth';
 
 /** Valores del formulario: incluye la confirmación, que no se envía. */
 interface ValoresRegistro extends UserCreate {

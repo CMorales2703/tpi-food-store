@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import Card from '../../../shared/ui/Card';
+import Card from '@/shared/ui/Card';
 
 interface AuthCardProps {
   titulo: string;

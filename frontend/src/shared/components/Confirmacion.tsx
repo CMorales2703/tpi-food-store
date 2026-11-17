@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
-import Button from '../ui/Button';
-import Modal from '../ui/Modal';
+import Button from '@/shared/ui/Button';
+import Modal from '@/shared/ui/Modal';
 import MensajeError from './MensajeError';
 
 interface ConfirmacionProps {

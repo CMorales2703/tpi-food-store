@@ -1,5 +1,5 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { CLAVE_PRODUCTOS } from '../../productos/hooks/useProductos';
+import { CLAVE_PRODUCTOS } from '@/features/productos/hooks/useProductos';
 import {
   cambiarEstadoPedido,
   cancelarPedido,
@@ -7,8 +7,8 @@ import {
   listarPedidos,
   obtenerResumen,
   type FiltrosPedidos,
-} from '../api/pedidos';
-import type { EstadoPedido } from '../types/pedido';
+} from '@/features/pedidos/api/pedidos';
+import type { EstadoPedido } from '@/features/pedidos/types/pedido';
 
 export const CLAVE_PEDIDOS = ['pedidos'] as const;
 export const CLAVE_RESUMEN = ['pedidos', 'resumen'] as const;

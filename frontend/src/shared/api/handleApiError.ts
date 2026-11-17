@@ -1,4 +1,4 @@
-import type { ErrorBackend } from '../types/api';
+import type { ErrorBackend } from '@/shared/types/api';
 
 /** Error de la API con el mensaje legible y el código HTTP (0 = sin conexión). */
 export class ApiError extends Error {

@@ -8,17 +8,17 @@ import {
   useReactTable,
   type SortingState,
 } from '@tanstack/react-table';
-import Buscador from '../../../shared/components/Buscador';
-import DataTable from '../../../shared/components/DataTable';
-import EncabezadoPagina from '../../../shared/components/EncabezadoPagina';
-import EstadoError from '../../../shared/components/EstadoError';
-import MensajeError from '../../../shared/components/MensajeError';
-import { SkeletonFilas } from '../../../shared/components/Skeleton';
-import Button from '../../../shared/ui/Button';
-import { formatearFecha } from '../../../shared/utils/format';
-import { useAuthStore } from '../../../store/authStore';
-import type { UserPublic } from '../../auth/types/auth';
-import { useCambiarEstadoUsuario, useUsuarios } from '../hooks/useUsuarios';
+import Buscador from '@/shared/components/Buscador';
+import DataTable from '@/shared/components/DataTable';
+import EncabezadoPagina from '@/shared/components/EncabezadoPagina';
+import EstadoError from '@/shared/components/EstadoError';
+import MensajeError from '@/shared/components/MensajeError';
+import { SkeletonFilas } from '@/shared/components/Skeleton';
+import Button from '@/shared/ui/Button';
+import { formatearFecha } from '@/shared/utils/format';
+import { useAuthStore } from '@/store/authStore';
+import type { UserPublic } from '@/features/auth/types/auth';
+import { useCambiarEstadoUsuario, useUsuarios } from '@/features/usuarios/hooks/useUsuarios';
 
 const columna = createColumnHelper<UserPublic>();
 

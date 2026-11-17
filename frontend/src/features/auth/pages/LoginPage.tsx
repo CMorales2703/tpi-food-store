@@ -1,14 +1,14 @@
 import { useState } from 'react';
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useForm } from '@tanstack/react-form';
-import { validarAlSalir } from '../../../shared/utils/form';
-import MensajeError from '../../../shared/components/MensajeError';
-import Button from '../../../shared/ui/Button';
-import { Input } from '../../../shared/ui/Input';
-import { requerido } from '../../../shared/utils/validators';
-import { useAuthStore } from '../../../store/authStore';
-import AuthCard from '../components/AuthCard';
-import type { Credenciales } from '../types/auth';
+import { validarAlSalir } from '@/shared/utils/form';
+import MensajeError from '@/shared/components/MensajeError';
+import Button from '@/shared/ui/Button';
+import { Input } from '@/shared/ui/Input';
+import { requerido } from '@/shared/utils/validators';
+import { useAuthStore } from '@/store/authStore';
+import AuthCard from '@/features/auth/components/AuthCard';
+import type { Credenciales } from '@/features/auth/types/auth';
 
 /** Estado que pueden mandar otras páginas al redirigir al login. */
 interface EstadoNavegacion {

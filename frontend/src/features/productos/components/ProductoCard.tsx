@@ -1,7 +1,7 @@
-import { formatearPrecio } from '../../../shared/utils/format';
-import Button from '../../../shared/ui/Button';
-import Card from '../../../shared/ui/Card';
-import type { Producto } from '../types/producto';
+import { formatearPrecio } from '@/shared/utils/format';
+import Button from '@/shared/ui/Button';
+import Card from '@/shared/ui/Card';
+import type { Producto } from '@/features/productos/types/producto';
 
 const ICONO_CATEGORIA: Record<string, string> = {
   pizzas: '🍕',

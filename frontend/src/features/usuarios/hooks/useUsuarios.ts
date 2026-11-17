@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { activarUsuario, desactivarUsuario, listarUsuarios } from '../api/usuarios';
+import { activarUsuario, desactivarUsuario, listarUsuarios } from '@/features/usuarios/api/usuarios';
 
 export const CLAVE_USUARIOS = ['usuarios'] as const;
 

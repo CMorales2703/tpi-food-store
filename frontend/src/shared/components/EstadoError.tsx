@@ -1,4 +1,4 @@
-import { handleApiError } from '../api/handleApiError';
+import { handleApiError } from '@/shared/api/handleApiError';
 
 interface EstadoErrorProps {
   error: unknown;

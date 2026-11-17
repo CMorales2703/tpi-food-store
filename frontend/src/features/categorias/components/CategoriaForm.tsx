@@ -1,10 +1,10 @@
 import { useForm } from '@tanstack/react-form';
-import { validarAlSalir } from '../../../shared/utils/form';
-import MensajeError from '../../../shared/components/MensajeError';
-import Button from '../../../shared/ui/Button';
-import { Input, TextArea } from '../../../shared/ui/Input';
-import { combinar, maxLargo, minLargo, requerido } from '../../../shared/utils/validators';
-import type { Categoria, CategoriaCreate } from '../types/categoria';
+import { validarAlSalir } from '@/shared/utils/form';
+import MensajeError from '@/shared/components/MensajeError';
+import Button from '@/shared/ui/Button';
+import { Input, TextArea } from '@/shared/ui/Input';
+import { combinar, maxLargo, minLargo, requerido } from '@/shared/utils/validators';
+import type { Categoria, CategoriaCreate } from '@/features/categorias/types/categoria';
 
 const validarNombre = combinar(requerido('El nombre es obligatorio'), minLargo(2), maxLargo(100));
 

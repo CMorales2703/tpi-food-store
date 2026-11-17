@@ -5,8 +5,8 @@ import {
   crearProducto,
   eliminarProducto,
   listarProductos,
-} from '../api/productos';
-import type { FiltrosProductos, ProductoStockUpdate, ProductoUpdate } from '../types/producto';
+} from '@/features/productos/api/productos';
+import type { FiltrosProductos, ProductoStockUpdate, ProductoUpdate } from '@/features/productos/types/producto';
 
 export const CLAVE_PRODUCTOS = ['productos'] as const;
 

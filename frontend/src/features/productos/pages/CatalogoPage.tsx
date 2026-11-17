@@ -1,14 +1,14 @@
 import { useState, type FormEvent } from 'react';
-import EstadoError from '../../../shared/components/EstadoError';
-import EstadoVacio from '../../../shared/components/EstadoVacio';
-import Paginacion from '../../../shared/components/Paginacion';
-import { SkeletonTarjetas } from '../../../shared/components/Skeleton';
-import Button from '../../../shared/ui/Button';
-import { useCartStore } from '../../../store/cartStore';
-import { useCategorias } from '../../categorias/hooks/useCategorias';
-import ProductoCard from '../components/ProductoCard';
-import { useProductos } from '../hooks/useProductos';
-import type { Producto } from '../types/producto';
+import EstadoError from '@/shared/components/EstadoError';
+import EstadoVacio from '@/shared/components/EstadoVacio';
+import Paginacion from '@/shared/components/Paginacion';
+import { SkeletonTarjetas } from '@/shared/components/Skeleton';
+import Button from '@/shared/ui/Button';
+import { useCartStore } from '@/store/cartStore';
+import { useCategorias } from '@/features/categorias/hooks/useCategorias';
+import ProductoCard from '@/features/productos/components/ProductoCard';
+import { useProductos } from '@/features/productos/hooks/useProductos';
+import type { Producto } from '@/features/productos/types/producto';
 
 const POR_PAGINA = 8;
 

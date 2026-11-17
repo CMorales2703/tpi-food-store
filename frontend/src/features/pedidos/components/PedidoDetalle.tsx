@@ -1,5 +1,5 @@
-import { formatearFecha, formatearPrecio } from '../../../shared/utils/format';
-import type { Pedido } from '../types/pedido';
+import { formatearFecha, formatearPrecio } from '@/shared/utils/format';
+import type { Pedido } from '@/features/pedidos/types/pedido';
 
 const ETIQUETA_PAGO = { EFECTIVO: 'Efectivo', TRANSFERENCIA: 'Transferencia' } as const;
 

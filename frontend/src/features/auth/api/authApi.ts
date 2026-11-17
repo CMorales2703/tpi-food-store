@@ -1,5 +1,5 @@
-import { axiosInstance } from '../../../shared/api/axiosInstance';
-import type { Credenciales, MensajeRespuesta, UserCreate, UserPublic } from '../types/auth';
+import { axiosInstance } from '@/shared/api/axiosInstance';
+import type { Credenciales, MensajeRespuesta, UserCreate, UserPublic } from '@/features/auth/types/auth';
 
 /** POST /auth/token — formulario OAuth2. El backend responde con la cookie HttpOnly. */
 export async function login({ username, password }: Credenciales): Promise<MensajeRespuesta> {

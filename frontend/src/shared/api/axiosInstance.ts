@@ -1,6 +1,6 @@
 import axios, { AxiosError } from 'axios';
-import { useAuthStore } from '../../store/authStore';
-import type { ErrorBackend } from '../types/api';
+import { useAuthStore } from '@/store/authStore';
+import type { ErrorBackend } from '@/shared/types/api';
 import { ApiError, mensajeDeDetail } from './handleApiError';
 
 export const API_URL: string = import.meta.env.VITE_API_URL ?? 'http://localhost:8000/api/v1';

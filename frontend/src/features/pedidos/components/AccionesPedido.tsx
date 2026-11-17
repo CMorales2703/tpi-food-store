@@ -1,5 +1,5 @@
-import Button from '../../../shared/ui/Button';
-import type { EstadoPedido, Pedido } from '../types/pedido';
+import Button from '@/shared/ui/Button';
+import type { EstadoPedido, Pedido } from '@/features/pedidos/types/pedido';
 
 /** Botones del admin según la máquina de estados (RN-02). Los terminales no tienen acciones. */
 const SIGUIENTE: Partial<Record<EstadoPedido, { estado: EstadoPedido; texto: string }>> = {

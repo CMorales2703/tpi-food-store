@@ -8,26 +8,26 @@ import {
   useReactTable,
   type SortingState,
 } from '@tanstack/react-table';
-import Buscador from '../../../shared/components/Buscador';
-import Confirmacion from '../../../shared/components/Confirmacion';
-import DataTable from '../../../shared/components/DataTable';
-import EncabezadoPagina from '../../../shared/components/EncabezadoPagina';
-import EstadoError from '../../../shared/components/EstadoError';
-import { SkeletonFilas } from '../../../shared/components/Skeleton';
-import Button from '../../../shared/ui/Button';
-import Modal from '../../../shared/ui/Modal';
-import { formatearPrecio } from '../../../shared/utils/format';
-import { useCategorias } from '../../categorias/hooks/useCategorias';
-import ProductoForm from '../components/ProductoForm';
-import StockForm from '../components/StockForm';
+import Buscador from '@/shared/components/Buscador';
+import Confirmacion from '@/shared/components/Confirmacion';
+import DataTable from '@/shared/components/DataTable';
+import EncabezadoPagina from '@/shared/components/EncabezadoPagina';
+import EstadoError from '@/shared/components/EstadoError';
+import { SkeletonFilas } from '@/shared/components/Skeleton';
+import Button from '@/shared/ui/Button';
+import Modal from '@/shared/ui/Modal';
+import { formatearPrecio } from '@/shared/utils/format';
+import { useCategorias } from '@/features/categorias/hooks/useCategorias';
+import ProductoForm from '@/features/productos/components/ProductoForm';
+import StockForm from '@/features/productos/components/StockForm';
 import {
   useActualizarProducto,
   useActualizarStock,
   useCrearProducto,
   useEliminarProducto,
   useProductos,
-} from '../hooks/useProductos';
-import type { Producto, ProductoCreate, ProductoStockUpdate } from '../types/producto';
+} from '@/features/productos/hooks/useProductos';
+import type { Producto, ProductoCreate, ProductoStockUpdate } from '@/features/productos/types/producto';
 
 const columna = createColumnHelper<Producto>();
 

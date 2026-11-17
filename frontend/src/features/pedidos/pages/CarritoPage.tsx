@@ -1,9 +1,9 @@
 import { Link, useNavigate } from 'react-router-dom';
-import EstadoVacio from '../../../shared/components/EstadoVacio';
-import Button from '../../../shared/ui/Button';
-import Card from '../../../shared/ui/Card';
-import { formatearPrecio } from '../../../shared/utils/format';
-import { useCartStore } from '../../../store/cartStore';
+import EstadoVacio from '@/shared/components/EstadoVacio';
+import Button from '@/shared/ui/Button';
+import Card from '@/shared/ui/Card';
+import { formatearPrecio } from '@/shared/utils/format';
+import { useCartStore } from '@/store/cartStore';
 
 export default function CarritoPage() {
   const items = useCartStore((s) => s.items);

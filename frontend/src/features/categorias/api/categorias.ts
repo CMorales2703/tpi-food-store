@@ -1,5 +1,5 @@
-import { axiosInstance } from '../../../shared/api/axiosInstance';
-import type { Categoria, CategoriaCreate, CategoriaUpdate } from '../types/categoria';
+import { axiosInstance } from '@/shared/api/axiosInstance';
+import type { Categoria, CategoriaCreate, CategoriaUpdate } from '@/features/categorias/types/categoria';
 
 /** GET /categorias — solo las activas (público). */
 export async function listarCategorias(): Promise<Categoria[]> {
