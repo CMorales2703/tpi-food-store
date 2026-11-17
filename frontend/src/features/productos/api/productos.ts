@@ -1,4 +1,4 @@
-import { axiosInstance } from '../../../shared/api/axiosInstance';
+import { axiosInstance } from '@/shared/api/axiosInstance';
 import type {
   FiltrosProductos,
   Producto,
@@ -6,7 +6,7 @@ import type {
   ProductosPaginados,
   ProductoStockUpdate,
   ProductoUpdate,
-} from '../types/producto';
+} from '@/features/productos/types/producto';
 
 /** GET /productos — activos, paginados en el servidor, con búsqueda y filtros. */
 export async function listarProductos(filtros: FiltrosProductos): Promise<ProductosPaginados> {

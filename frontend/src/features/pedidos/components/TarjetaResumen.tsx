@@ -1,4 +1,4 @@
-import Card from '../../../shared/ui/Card';
+import Card from '@/shared/ui/Card';
 
 interface TarjetaResumenProps {
   titulo: string;

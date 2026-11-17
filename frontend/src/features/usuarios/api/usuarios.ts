@@ -1,5 +1,5 @@
-import { axiosInstance } from '../../../shared/api/axiosInstance';
-import type { UserPublic } from '../../auth/types/auth';
+import { axiosInstance } from '@/shared/api/axiosInstance';
+import type { UserPublic } from '@/features/auth/types/auth';
 
 /** GET /admin/usuarios — todos, activos y desactivados. */
 export async function listarUsuarios(): Promise<UserPublic[]> {

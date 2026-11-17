@@ -1,8 +1,8 @@
 import type { ReactNode } from 'react';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
-import type { Rol } from '../features/auth/types/auth';
-import Cargando from '../shared/components/Cargando';
-import { useAuthStore } from '../store/authStore';
+import type { Rol } from '@/features/auth/types/auth';
+import Cargando from '@/shared/components/Cargando';
+import { useAuthStore } from '@/store/authStore';
 
 interface ProtectedRouteProps {
   /** Roles permitidos. Si se omite, alcanza con tener sesión. */

@@ -1,4 +1,4 @@
-import { handleApiError } from '../api/handleApiError';
+import { handleApiError } from '@/shared/api/handleApiError';
 
 /** Mensaje de error en línea (por ejemplo, debajo de un formulario). No muestra nada si no hay error. */
 export default function MensajeError({ error }: { error: unknown }) {

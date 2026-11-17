@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
-import { useAuthStore } from '../../store/authStore';
-import { useCartStore } from '../../store/cartStore';
+import { useAuthStore } from '@/store/authStore';
+import { useCartStore } from '@/store/cartStore';
 
 const claseLink = ({ isActive }: { isActive: boolean }): string =>
   `rounded-md px-3 py-2 text-sm font-medium transition-colors ${

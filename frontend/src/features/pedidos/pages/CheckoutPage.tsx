@@ -1,9 +1,9 @@
 import { Link, Navigate, useNavigate } from 'react-router-dom';
-import Card from '../../../shared/ui/Card';
-import { formatearPrecio } from '../../../shared/utils/format';
-import { useCartStore } from '../../../store/cartStore';
-import CheckoutForm, { type DatosCheckout } from '../components/CheckoutForm';
-import { useCrearPedido } from '../hooks/usePedidos';
+import Card from '@/shared/ui/Card';
+import { formatearPrecio } from '@/shared/utils/format';
+import { useCartStore } from '@/store/cartStore';
+import CheckoutForm, { type DatosCheckout } from '@/features/pedidos/components/CheckoutForm';
+import { useCrearPedido } from '@/features/pedidos/hooks/usePedidos';
 
 export default function CheckoutPage() {
   const items = useCartStore((s) => s.items);

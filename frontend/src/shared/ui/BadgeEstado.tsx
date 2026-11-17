@@ -1,4 +1,4 @@
-import type { EstadoPedido } from '../../features/pedidos/types/pedido';
+import type { EstadoPedido } from '@/features/pedidos/types/pedido';
 
 const ESTILOS: Record<EstadoPedido, { texto: string; clase: string }> = {
   PENDIENTE: { texto: 'Pendiente', clase: 'bg-amber-100 text-amber-800 ring-amber-200' },

@@ -1,19 +1,19 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import EstadoError from '../../../shared/components/EstadoError';
-import EstadoVacio from '../../../shared/components/EstadoVacio';
-import MensajeError from '../../../shared/components/MensajeError';
-import Paginacion from '../../../shared/components/Paginacion';
-import { SkeletonFilas } from '../../../shared/components/Skeleton';
-import BadgeEstado from '../../../shared/ui/BadgeEstado';
-import Button from '../../../shared/ui/Button';
-import Card from '../../../shared/ui/Card';
-import Modal from '../../../shared/ui/Modal';
-import { formatearFecha, formatearPrecio } from '../../../shared/utils/format';
-import FiltroEstado from '../components/FiltroEstado';
-import PedidoDetalle from '../components/PedidoDetalle';
-import { useCancelarPedido, usePedidos } from '../hooks/usePedidos';
-import type { EstadoPedido, Pedido } from '../types/pedido';
+import EstadoError from '@/shared/components/EstadoError';
+import EstadoVacio from '@/shared/components/EstadoVacio';
+import MensajeError from '@/shared/components/MensajeError';
+import Paginacion from '@/shared/components/Paginacion';
+import { SkeletonFilas } from '@/shared/components/Skeleton';
+import BadgeEstado from '@/shared/ui/BadgeEstado';
+import Button from '@/shared/ui/Button';
+import Card from '@/shared/ui/Card';
+import Modal from '@/shared/ui/Modal';
+import { formatearFecha, formatearPrecio } from '@/shared/utils/format';
+import FiltroEstado from '@/features/pedidos/components/FiltroEstado';
+import PedidoDetalle from '@/features/pedidos/components/PedidoDetalle';
+import { useCancelarPedido, usePedidos } from '@/features/pedidos/hooks/usePedidos';
+import type { EstadoPedido, Pedido } from '@/features/pedidos/types/pedido';
 
 const POR_PAGINA = 10;
 

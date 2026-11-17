@@ -1,9 +1,9 @@
 import { useForm } from '@tanstack/react-form';
-import { validarAlSalir } from '../../../shared/utils/form';
-import MensajeError from '../../../shared/components/MensajeError';
-import Button from '../../../shared/ui/Button';
-import Checkbox from '../../../shared/ui/Checkbox';
-import { Input, Select, TextArea } from '../../../shared/ui/Input';
+import { validarAlSalir } from '@/shared/utils/form';
+import MensajeError from '@/shared/components/MensajeError';
+import Button from '@/shared/ui/Button';
+import Checkbox from '@/shared/ui/Checkbox';
+import { Input, Select, TextArea } from '@/shared/ui/Input';
 import {
   combinar,
   enteroNoNegativo,
@@ -12,9 +12,9 @@ import {
   numeroNoNegativo,
   requerido,
   urlOpcional,
-} from '../../../shared/utils/validators';
-import type { Categoria } from '../../categorias/types/categoria';
-import type { Producto, ProductoCreate } from '../types/producto';
+} from '@/shared/utils/validators';
+import type { Categoria } from '@/features/categorias/types/categoria';
+import type { Producto, ProductoCreate } from '@/features/productos/types/producto';
 
 /** Valores del formulario: los números se editan como texto y se convierten al enviar. */
 interface ValoresProducto {

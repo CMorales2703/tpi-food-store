@@ -1,11 +1,11 @@
 import { useForm } from '@tanstack/react-form';
-import { validarAlSalir } from '../../../shared/utils/form';
-import MensajeError from '../../../shared/components/MensajeError';
-import Button from '../../../shared/ui/Button';
-import Checkbox from '../../../shared/ui/Checkbox';
-import { Input } from '../../../shared/ui/Input';
-import { enteroNoNegativo } from '../../../shared/utils/validators';
-import type { Producto, ProductoStockUpdate } from '../types/producto';
+import { validarAlSalir } from '@/shared/utils/form';
+import MensajeError from '@/shared/components/MensajeError';
+import Button from '@/shared/ui/Button';
+import Checkbox from '@/shared/ui/Checkbox';
+import { Input } from '@/shared/ui/Input';
+import { enteroNoNegativo } from '@/shared/utils/validators';
+import type { Producto, ProductoStockUpdate } from '@/features/productos/types/producto';
 
 interface StockFormProps {
   producto: Producto;

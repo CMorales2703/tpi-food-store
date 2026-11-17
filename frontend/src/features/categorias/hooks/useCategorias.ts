@@ -1,12 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { CLAVE_PRODUCTOS } from '../../productos/hooks/useProductos';
+import { CLAVE_PRODUCTOS } from '@/features/productos/hooks/useProductos';
 import {
   actualizarCategoria,
   crearCategoria,
   eliminarCategoria,
   listarCategorias,
-} from '../api/categorias';
-import type { CategoriaUpdate } from '../types/categoria';
+} from '@/features/categorias/api/categorias';
+import type { CategoriaUpdate } from '@/features/categorias/types/categoria';
 
 export const CLAVE_CATEGORIAS = ['categorias'] as const;
 

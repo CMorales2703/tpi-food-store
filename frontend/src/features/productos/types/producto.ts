@@ -1,6 +1,6 @@
 // Mismos nombres de campo que los schemas del backend (modules/productos/schemas.py).
-import type { Paginado } from '../../../shared/types/api';
-import type { Categoria } from '../../categorias/types/categoria';
+import type { Paginado } from '@/shared/types/api';
+import type { Categoria } from '@/features/categorias/types/categoria';
 
 /** ProductoRead: incluye su categoría. */
 export interface Producto {

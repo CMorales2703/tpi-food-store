@@ -1,11 +1,11 @@
 import { Link } from 'react-router-dom';
-import EncabezadoPagina from '../../../shared/components/EncabezadoPagina';
-import EstadoError from '../../../shared/components/EstadoError';
-import { Skeleton } from '../../../shared/components/Skeleton';
-import Button from '../../../shared/ui/Button';
-import { formatearPrecio } from '../../../shared/utils/format';
-import TarjetaResumen from '../components/TarjetaResumen';
-import { useResumenPedidos } from '../hooks/usePedidos';
+import EncabezadoPagina from '@/shared/components/EncabezadoPagina';
+import EstadoError from '@/shared/components/EstadoError';
+import { Skeleton } from '@/shared/components/Skeleton';
+import Button from '@/shared/ui/Button';
+import { formatearPrecio } from '@/shared/utils/format';
+import TarjetaResumen from '@/features/pedidos/components/TarjetaResumen';
+import { useResumenPedidos } from '@/features/pedidos/hooks/usePedidos';
 
 export default function AdminResumenPage() {
   const resumen = useResumenPedidos();

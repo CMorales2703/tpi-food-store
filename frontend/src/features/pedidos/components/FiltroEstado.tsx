@@ -1,4 +1,4 @@
-import { ESTADOS_PEDIDO, type EstadoPedido } from '../types/pedido';
+import { ESTADOS_PEDIDO, type EstadoPedido } from '@/features/pedidos/types/pedido';
 
 const ETIQUETA: Record<EstadoPedido, string> = {
   PENDIENTE: 'Pendientes',

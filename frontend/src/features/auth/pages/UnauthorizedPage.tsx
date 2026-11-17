@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
-import Card from '../../../shared/ui/Card';
-import { useAuthStore } from '../../../store/authStore';
+import Card from '@/shared/ui/Card';
+import { useAuthStore } from '@/store/authStore';
 
 /** Hay sesión, pero el rol no permite entrar a la página pedida. */
 export default function UnauthorizedPage() {

@@ -188,6 +188,7 @@ frontend/src/
 - **Estado del servidor:** lo maneja TanStack Query (catálogo, pedidos, usuarios, resumen), con `queryKey` descriptivas e invalidación después de cada mutación. Por ejemplo, al crear o cancelar un pedido se invalidan los pedidos y los productos, porque cambió el stock.
 - **Estado del cliente:** lo maneja Zustand. En la sesión se persiste **solo el usuario**, nunca el token. El carrito se persiste completo.
 - **`useEffect`:** el único de la aplicación es `checkSession`, al montar `App`.
+- **Imports:** entre carpetas se usa el alias `@/` (`@/shared/...`, `@/features/...`, `@/store/...`), configurado en `vite.config.ts` y en `tsconfig.app.json`. Dentro de una misma carpeta se usan imports relativos cortos (`./ProtectedRoute`).
 
 ### Sesión con cookie HttpOnly
 

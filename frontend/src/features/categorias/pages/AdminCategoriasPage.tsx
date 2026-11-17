@@ -8,22 +8,22 @@ import {
   useReactTable,
   type SortingState,
 } from '@tanstack/react-table';
-import Buscador from '../../../shared/components/Buscador';
-import Confirmacion from '../../../shared/components/Confirmacion';
-import DataTable from '../../../shared/components/DataTable';
-import EncabezadoPagina from '../../../shared/components/EncabezadoPagina';
-import EstadoError from '../../../shared/components/EstadoError';
-import { SkeletonFilas } from '../../../shared/components/Skeleton';
-import Button from '../../../shared/ui/Button';
-import Modal from '../../../shared/ui/Modal';
-import CategoriaForm from '../components/CategoriaForm';
+import Buscador from '@/shared/components/Buscador';
+import Confirmacion from '@/shared/components/Confirmacion';
+import DataTable from '@/shared/components/DataTable';
+import EncabezadoPagina from '@/shared/components/EncabezadoPagina';
+import EstadoError from '@/shared/components/EstadoError';
+import { SkeletonFilas } from '@/shared/components/Skeleton';
+import Button from '@/shared/ui/Button';
+import Modal from '@/shared/ui/Modal';
+import CategoriaForm from '@/features/categorias/components/CategoriaForm';
 import {
   useActualizarCategoria,
   useCategorias,
   useCrearCategoria,
   useEliminarCategoria,
-} from '../hooks/useCategorias';
-import type { Categoria, CategoriaCreate } from '../types/categoria';
+} from '@/features/categorias/hooks/useCategorias';
+import type { Categoria, CategoriaCreate } from '@/features/categorias/types/categoria';
 
 const columna = createColumnHelper<Categoria>();
 

@@ -1,6 +1,6 @@
-import { axiosInstance } from '../../../shared/api/axiosInstance';
-import type { Paginado } from '../../../shared/types/api';
-import type { EstadoPedido, Pedido, PedidoCreate, ResumenPedidos } from '../types/pedido';
+import { axiosInstance } from '@/shared/api/axiosInstance';
+import type { Paginado } from '@/shared/types/api';
+import type { EstadoPedido, Pedido, PedidoCreate, ResumenPedidos } from '@/features/pedidos/types/pedido';
 
 export interface FiltrosPedidos {
   skip: number;
